@@ -1,15 +1,15 @@
 # syntax=docker/dockerfile:1
 
-FROM python:3.9.10-bullseye
+FROM python:3.9
 
 WORKDIR /app
 
-RUN pip install pipenv
+RUN pip install micropipenv
 
-COPY Pipfile Pipfile
+#COPY Pipfile Pipfile
 COPY Pipfile.lock Pipfile.lock
 
-RUN pipenv install --system --deploy --ignore-pipfile
+RUN micropipenv install
 
 COPY . .
 
