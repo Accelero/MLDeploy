@@ -11,6 +11,6 @@ COPY Pipfile.lock Pipfile.lock
 
 RUN micropipenv install
 
-COPY . .
+COPY modelserver modelserver
 
-CMD ["python", "Inference.py"]
+CMD ["python", "modelserver/modelserver.py"]

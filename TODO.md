@@ -1,0 +1,1 @@
+fix relative path issues when executed on dev machine vs in docker
