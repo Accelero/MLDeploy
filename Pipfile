@@ -15,6 +15,8 @@ seaborn = "*"
 arff2pandas = "*"
 requests = "*"
 torch = "*"
+jupyter = "*"
+torchvision = "*"
 
 [dev-packages]
 autopep8 = "*"
