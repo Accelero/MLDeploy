@@ -2,15 +2,14 @@
 
 FROM python:3.9
 
-WORKDIR /app
-
 RUN pip install micropipenv
 
-#COPY Pipfile Pipfile
 COPY Pipfile.lock Pipfile.lock
 
 RUN micropipenv install
 
-COPY app .
+COPY app app
 
-CMD ["python", "modelserver/modelserver.py"]
+WORKDIR /app
+
+CMD ["python", "modelserver.py"]

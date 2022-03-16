@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from torchvision import datasets, transforms
-from modelserver.autoencoder.autoencoder import Autoencoder
+from app.autoencoder import Autoencoder
 from pathlib import Path
 
 def train():

@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-import autoencoder.inference
+import inference
 
 app = Flask(__name__)
 
@@ -9,4 +9,4 @@ def evalloss():
     # Get JSON from http message body
     inputData = request.get_json(force=True)
     # Go to eval() and return result
-    return jsonify(autoencoder.inference.eval(inputData))
+    return jsonify(inference.eval(inputData))

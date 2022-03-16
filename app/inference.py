@@ -13,5 +13,6 @@ def eval(inputData):
     inputData.reshape(-1, 28*28)
 
     recon = model(inputData)
-    loss = criterion(inputData, recon)
+    loss = criterion(inputData, recon).item()
+    print(type(loss))
     return loss
