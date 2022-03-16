@@ -5,21 +5,15 @@ name = "pypi"
 
 [packages]
 flask = "*"
-numpy = "*"
-onnxruntime = "*"
 pandas = "*"
-matplotlib = "*"
-onnx = "*"
-scikit-learn = "*"
-seaborn = "*"
-arff2pandas = "*"
 requests = "*"
 torch = "*"
-jupyter = "*"
 torchvision = "*"
 
 [dev-packages]
 autopep8 = "*"
+jupyter = "*"
+matplotlib = "*"
 
 [requires]
 python_version = "3.9"

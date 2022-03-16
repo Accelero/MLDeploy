@@ -11,6 +11,6 @@ COPY Pipfile.lock Pipfile.lock
 
 RUN micropipenv install
 
-COPY modelserver modelserver
+COPY app .
 
 CMD ["python", "modelserver/modelserver.py"]
