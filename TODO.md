@@ -1,1 +1,1 @@
-fix relative path issues when executed on dev machine vs in docker
+1. Find solution for PYTHONPATH in Docker vs local machine
