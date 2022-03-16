@@ -5,7 +5,6 @@ name = "pypi"
 
 [packages]
 flask = "*"
-pandas = "*"
 requests = "*"
 torch = "*"
 torchvision = "*"
