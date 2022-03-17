@@ -8,6 +8,7 @@ flask = "*"
 requests = "*"
 torch = "*"
 torchvision = "*"
+paho-mqtt = "*"
 
 [dev-packages]
 autopep8 = "*"
