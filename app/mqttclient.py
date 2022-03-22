@@ -1,7 +1,6 @@
 import paho.mqtt.client as mqtt
 from config import config
 
-
 mqtt_broker_ip = config.get('DEFAULT', 'mqtt_broker_ip')
 mqtt_broker_port = config.getint('DEFAULT', 'mqtt_broker_port')
 
