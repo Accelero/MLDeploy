@@ -12,4 +12,4 @@ COPY app app
 
 WORKDIR /app
 
-CMD ["python", "modelserver.py"]
+CMD ["python", "main.py"]

@@ -3,7 +3,7 @@ from config import config
 
 
 mqtt_broker_ip = config.get('DEFAULT', 'mqtt_broker_ip')
-mqtt_broker_port = config.get('DEFAULT', 'mqtt_broker_port')
+mqtt_broker_port = config.getint('DEFAULT', 'mqtt_broker_port')
 
 print('creating mqtt client instance')
 client = mqtt.Client(client_id='testclient')
