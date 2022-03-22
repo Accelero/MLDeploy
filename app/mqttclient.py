@@ -12,7 +12,7 @@ print('connecting to broker')
 client.connect(host=mqtt_broker_ip, port=mqtt_broker_port)
 
 print('subscribing to topic feature_store/machine1/feature_vectors')
-client.subscribe(topic='test/#')
+client.subscribe(topic='feature_store/machine1/feature_vectors')
 
 def on_message(client, userdata, message):
     print('Received message' + str(message.payload))

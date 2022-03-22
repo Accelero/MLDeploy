@@ -3,14 +3,18 @@
 import restapi
 import mqttclient
 import config
+import os
+import subprocess
 
 def main():
 
-
+    os.environ['FLASK_APP'] = 'app/restapi.py'
+    flaskserver = subprocess.Popen('flask run' + ' -p 9000')
     #start flask server
-    restapi.app.run(host='0.0.0.0', port=9000, debug=True)
+    # restapi.app.run(host='localhost', port=9000, debug=True)
     #start mqtt client
-    mqttclient.client.loop_start()
+    print('test')
+    mqttclient.client.loop_forever()
 
 
 if __name__ == '__main__':
