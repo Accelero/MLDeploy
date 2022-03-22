@@ -18,6 +18,3 @@ def on_message(client, userdata, message):
     print('Received message' + str(message.payload))
 
 client.on_message = on_message
-
-print('starting client')
-client.loop_start()
