@@ -12,4 +12,6 @@ COPY app app
 
 WORKDIR /app
 
-ENTRYPOINT ["python", "main.py"]
+ENV DOCKERMODE 1
+
+ENTRYPOINT ["python", "-u", "main.py"]

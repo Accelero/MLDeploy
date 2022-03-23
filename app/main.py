@@ -18,7 +18,7 @@ def main():
     global isRunning
     isRunning = True
     os.environ['FLASK_APP'] = 'restapi.py'
-    p = subprocess.Popen(['flask', 'run', '-h', '0.0.0.0', '-p', '9000'], shell=False)
+    # p = subprocess.Popen(['flask', 'run', '-h', '0.0.0.0', '-p', '9000'], shell=False)
     # restapi.app.run(host='0.0.0.0', port=9000, debug=False)
     mqttclient.client.loop_start()
     while isRunning:
