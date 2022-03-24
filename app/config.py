@@ -4,8 +4,6 @@ import os
 
 pathToConfig = Path(__file__).parent / 'config.ini'
 pathToConfigOverrides = Path('dev/configoverrides.ini')
-# config = configparser.ConfigParser()
-# config.read(pathToConfig)
 
 class ExtendedConfigParser(configparser.ConfigParser):
     def __init__(self, path):
