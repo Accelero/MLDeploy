@@ -14,4 +14,8 @@ WORKDIR /app
 
 ENV DOCKERMODE 1
 
+RUN useradd -u 1234 noadmin
+
+USER noadmin
+
 ENTRYPOINT ["python", "-u", "main.py"]
