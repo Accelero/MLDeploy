@@ -10,7 +10,6 @@ criterion = nn.MSELoss()
 
 def eval(inputData):
     inputData = torch.tensor(inputData)
-    inputData.reshape(-1, 28*28)
 
     recon = model(inputData)
     loss = criterion(inputData, recon).item()
