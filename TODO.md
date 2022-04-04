@@ -3,4 +3,3 @@
 3. MQTT Queue and batch inference
 4. ONNX integration
 5. Docker compose file with volume
-6. Nograd in pytorch

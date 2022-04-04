@@ -24,7 +24,7 @@ def on_subscribe(client, userdata, mid, granted_qos):
 client.on_subscribe = on_subscribe
 
 def on_message(client, userdata, message):
-    response = inference.eval(json.loads(message.payload.decode('utf-8', 'ignore')))
+    response = inference.eval(json.loads(message.payload.decode('utf-8')))
     client.publish(topic=mqtt_pub_topic, payload=response, qos=2, retain=True)
 client.on_message = on_message
 

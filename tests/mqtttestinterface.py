@@ -1,4 +1,3 @@
-import subprocess
 import pandas as pd
 import json
 import paho.mqtt.client as mqtt
@@ -7,6 +6,7 @@ import random
 import time
 import signal
 
+mqtt_broker_ip = config.get('DEFAULT', 'mqtt_broker_ip')
 mqtt_sub_topic = config.get('DEFAULT', 'mqtt_pub_topic')
 mqtt_pub_topic = config.get('DEFAULT', 'mqtt_sub_topic')
 
@@ -25,7 +25,7 @@ def on_message(client, userdata, message):
     print('loss: ' + message.payload.decode())
 client.on_message = on_message
 
-client.connect(host='localhost', port=1883)
+client.connect(host=mqtt_broker_ip, port=1883)
 
 exitFlag = False
 def signalHandler(signum, frame):
