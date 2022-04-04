@@ -5,6 +5,7 @@ import requests
 import json
 import pandas as pd
 
+
 data_path = "C:/Users/David/Nextcloud/MA David/Datensätze/HELLER-Data-Full.csv"
 df = pd.read_csv(data_path)
 features = df.iloc[:, :-1]

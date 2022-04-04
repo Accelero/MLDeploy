@@ -14,8 +14,8 @@ def signalHandler(signum, frame):
 
 def main():
 
-    os.environ['FLASK_APP'] = 'app/restapi.py'
-    flaskserver = subprocess.Popen(['flask', 'run', '-h', 'localhost', '-p', '9000'], shell=False)
+    os.environ['FLASK_APP'] = 'restapi.py'
+    flaskserver = subprocess.Popen(['flask', 'run', '-h', '0.0.0.0', '-p', '9000'], shell=False)
     # restapi.app.run(host='0.0.0.0', port=9000, debug=False)
 
     mqttclient.client.loop_start()
