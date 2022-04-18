@@ -7,7 +7,7 @@ from autoencoder import Autoencoder
 from pathlib import Path
 import pandas as pd
 import numpy as np
-import cProfile
+import timeit
 
 torch_model = Autoencoder()
 torch_model.load_state_dict(torch.load(Path(__file__).parent.parent / 'app/autoencoder.pt'))
@@ -53,12 +53,14 @@ if __name__=="__main__":
     batched_64 = batchData(64)
     batched_all = batchData(len(features))
 
-    cProfile.run('batchInf(onnxInf, batched_1)', 'data/profiling/onnxtest/batch_1-6358_ONNX')
-    cProfile.run('batchInf(onnxInf, batched_8)', 'data/profiling/onnxtest/batch_8-6358_ONNX')
-    cProfile.run('batchInf(onnxInf, batched_64)', 'data/profiling/onnxtest/batch_64-6358_ONNX')
-    cProfile.run('batchInf(onnxInf, batched_all)', 'data/profiling/onnxtest/batch_6358-6358_ONNX')
+    print('ONNX')
+    print('batch size: 1 ' + str(timeit.timeit('batchInf(onnxInf, batched_1)', globals=locals(), number=1)))
+    print('batch size: 8 ' + str(timeit.timeit('batchInf(onnxInf, batched_8)', globals=locals(), number=1)))
+    print('batch size: 64 ' + str(timeit.timeit('batchInf(onnxInf, batched_64)', globals=locals(), number=1)))
+    print('batch size: 6358 ' + str(timeit.timeit('batchInf(onnxInf, batched_all)', globals=locals(), number=1)))
 
-    cProfile.run('batchInf(torchInf, batched_1)','data/profiling/onnxtest/batch_1-6358_Pytorch')
-    cProfile.run('batchInf(torchInf, batched_8)','data/profiling/onnxtest/batch_8-6358_Pytorch')
-    cProfile.run('batchInf(torchInf, batched_64)', 'data/profiling/onnxtest/batch_64-6358_Pytorch')
-    cProfile.run('batchInf(torchInf, batched_all)', 'data/profiling/onnxtest/batch_6358-6358_Pytorch')
+    print('Pytorch')
+    print('batch size: 1 ' + str(timeit.timeit('batchInf(torchInf, batched_1)', globals=locals(), number=1)))
+    print('batch size: 8 ' + str(timeit.timeit('batchInf(torchInf, batched_8)', globals=locals(), number=1)))
+    print('batch size: 64 ' + str(timeit.timeit('batchInf(torchInf, batched_64)', globals=locals(), number=1)))
+    print('batch size: 6358 ' + str(timeit.timeit('batchInf(torchInf, batched_all)', globals=locals(), number=1)))
