@@ -1,0 +1,26 @@
+networks:
+  ml_net:
+    driver: bridge
+
+volumes:
+  influxdata:
+  influxconfig:
+
+services:
+  # modelserver:
+  #   build: .
+  #   networks: 
+  #     - ml_net
+
+  db:
+    image: influxdb
+    networks:
+      - ml_net
+    volumes:
+      - influxdata:/var/lib/influxdb2
+      - influxconfig:/etc/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_USERNAME=superuser
+      - DOCKER_INFLUXDB_INIT_PASSWORD=superuser
+      - DOCKER_INFLUXDB_INIT_ORG=wbk
+      - DOCKER_INFLUXDB_INIT_BUCKET=initialbucket
