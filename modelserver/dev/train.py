@@ -40,7 +40,14 @@ def train():
     outputs.append((epoch, input, recon))
 
     # Export model
-    torch.save(model.state_dict(), 'app/autoencoder.pt')
+    torch.save(model.state_dict(), "app/autoencoder.pt")
+    torch.onnx.export(model, 
+                      input, 
+                      "app/autoencoder.onnx", 
+                      input_names=['input'], 
+                      output_names=['output'], 
+                      dynamic_axes={'input':{0: 'batch_size'}, 
+                                    'output':{0 : 'batch_size'}})
 
 if __name__ == '__main__':
     train()

@@ -9,12 +9,15 @@ requests = "*"
 torch = "*"
 torchvision = "*"
 paho-mqtt = "*"
+onnx = "*"
+onnxruntime = "*"
 
 [dev-packages]
 autopep8 = "*"
 jupyter = "*"
 matplotlib = "*"
 pandas = "*"
+snakeviz = "*"
 
 [requires]
 python_version = "3.9"
