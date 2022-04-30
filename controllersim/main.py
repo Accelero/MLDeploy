@@ -1,19 +1,26 @@
 import asyncio
 import signal
+from generator import SignalGenerator
+import threading
+import time
 
-shutdownEvent = asyncio.Event()
+loop = asyncio.new_event_loop()
+gen = SignalGenerator(0.01, 0.5)
 
 def signalHandler(signum, frame):
+    print('signal received')
     shutdownEvent.set()
-    print('stopping')
 
 async def main():
-    print('main started')
+    global shutdownEvent
+    shutdownEvent = asyncio.Event()
+    gen.start()
+    print('started')
     await shutdownEvent.wait()
-    print('main finished')
+    print('shutting down')
+    gen.stop()
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signalHandler)
     signal.signal(signal.SIGTERM, signalHandler)
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    asyncio.run(main())

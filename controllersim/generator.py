@@ -23,6 +23,7 @@ class SignalGenerator():
         self.mqttClient.connect(host='localhost', port=1883)
         self.sample_interval = sample_interval
         self.send_interval = send_interval
+        self.t = threading.Thread(target=self.run)
 
     async def sample(self, start_time, interval):
         while not self.stopEvent.is_set():
@@ -32,7 +33,6 @@ class SignalGenerator():
     async def send(self, interval):
         while not self.stopEvent.is_set():
             payload = json.dumps(self.output)
-            print(payload)
             self.mqttClient.publish(topic='sim_sensor', payload=payload)
             self.output.clear()
             await asyncio.sleep(interval)
@@ -43,17 +43,15 @@ class SignalGenerator():
         self.loop.run_until_complete(self.send(self.send_interval))
 
     def start(self):
-        t = threading.Thread(target=self.run)
-        t.start()
+        self.t.start()
 
     def stop(self):
         self.stopEvent.set()
+        self.t.join()
 
 
 if __name__=='__main__':
     gen = SignalGenerator(0.01, .05)
     gen.start()
-    time.sleep(20)
-    print('slept')
+    time.sleep(2)
     gen.stop()
-    print('successfully stopped')
