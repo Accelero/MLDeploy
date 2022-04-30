@@ -16,14 +16,12 @@ def generateSineSample(start_time, ampl=1, freq=10, phase=0, offset=1, noise=0):
 
 class SignalGenerator():
     def __init__(self, sample_interval, send_interval):
-        self.output = []
-        self.stopEvent = asyncio.Event()
-        self.loop = asyncio.new_event_loop()
-        self.mqttClient = mqtt.Client()
-        self.mqttClient.connect(host='localhost', port=1883)
         self.sample_interval = sample_interval
         self.send_interval = send_interval
-        self.t = threading.Thread(target=self.run)
+        self.thread = threading.Thread(target=self.run)
+        self.mqttClient = mqtt.Client()
+        self.mqttClient.connect(host='localhost', port=1883)
+        self.output = []
 
     async def sample(self, start_time, interval):
         while not self.stopEvent.is_set():
@@ -37,17 +35,19 @@ class SignalGenerator():
             self.output.clear()
             await asyncio.sleep(interval)
 
-    def run(self):
-        self.stopEvent.clear()
+    def run(self): 
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
+        self.stopEvent = asyncio.Event()
         self.loop.create_task(self.sample(time.time(), self.sample_interval))
         self.loop.run_until_complete(self.send(self.send_interval))
 
     def start(self):
-        self.t.start()
+        self.thread.start()
 
     def stop(self):
-        self.stopEvent.set()
-        self.t.join()
+        self.loop.call_soon_threadsafe(self.stopEvent.set)
+        self.thread.join()
 
 
 if __name__=='__main__':
