@@ -4,7 +4,7 @@ class Autoencoder(nn.Module):
     def __init__(self):
         super().__init__()
         self.encoder = nn.Sequential(
-            nn.Linear(1250, 128), 
+            nn.Linear(512, 128), 
             nn.ReLU(),
             nn.Linear(128, 32),
             nn.ReLU(),
@@ -16,7 +16,7 @@ class Autoencoder(nn.Module):
             nn.ReLU(),
             nn.Linear(32, 128),
             nn.ReLU(),
-            nn.Linear(128, 1250)
+            nn.Linear(128, 512)
         )
 
 

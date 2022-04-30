@@ -7,25 +7,30 @@ import pandas as pd
 import numpy as np
 
 def train():
-    # Setup MNIST training data
-    data_path = "C:/Users/David/Nextcloud/MA David/Datensätze/HELLER-Data-Full.csv"
+    # Setup training data
+    data_path = './data/testset.csv'
     df = pd.read_csv(data_path)
-    features = df.iloc[:, :-1]
-    labels = df.iloc[:, [-1]]
+    df = df.iloc[3:, 6]
+    df = pd.to_numeric(df)
+    index = 0
+    output = []
+    while index in range(0, len(df.index)):
+        temp=df.iloc[index:index+512]
+        if len(temp)==512:
+            output.append(temp.to_list())
+        index = index+10
 
-    train = torch.tensor(features.values, dtype=torch.float32)
-    data_loader = torch.utils.data.DataLoader(dataset=train, batch_size=64, shuffle=True)
+    training_data = torch.tensor(output, dtype=torch.float32)
+    data_loader = torch.utils.data.DataLoader(dataset=training_data, batch_size=16, shuffle=True)
 
 
     # Setup training parameters
     model = Autoencoder()
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
-    num_epochs = 10
-    outputs = []
+    num_epochs = 200
 
     # Training
-    num_epochs = 1000
     outputs = []
     for epoch in range(num_epochs):
         for input in data_loader:
