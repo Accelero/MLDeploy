@@ -8,19 +8,25 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /docker-volumes/mldeploy/influx_data
+      device: /c//docker-volumes/mldeploy/influx_data
   influx_config:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /docker-volumes/mldeploy/influx_config
+      device: /c//docker-volumes/mldeploy/influx_config
   telegraf_config:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /docker-volumes/mldeploy/telegraf_config
+      device: /c//docker-volumes/mldeploy/telegraf_config
+  chronograf:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /c//docker-volumes/mldeploy/chronograf
 
 services:
   influxdb:
@@ -30,8 +36,8 @@ services:
     ports:
       - 8086:8086
     volumes:
-      - influx_data:/var/lib/influxdb2
-      - influx_config:/etc/influxdb2
+      - influx_data:/var/lib/influxdb
+      - influx_config:/etc/influxdb
 
   telegraf:
     build: telegraf
@@ -41,3 +47,15 @@ services:
       - telegraf_config:/etc/telegraf
     depends_on:
       - influxdb
+
+  chronograf:
+    image: chronograf
+    networks: 
+      - ml_net
+    ports:
+      - 8888:8888
+    volumes:
+      - chronograf:/var/lib/chronograf
+    depends_on:
+      - influxdb
+      

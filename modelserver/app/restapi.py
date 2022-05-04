@@ -28,3 +28,9 @@ def saveCfg():
         config.save()
     finally:
         return 'config saved'
+
+@app.route('/write', methods=['POST'])
+def printer():
+    # inputData = request.get_json(force=True)
+    print(request.get_data(as_text=True))
+    return 'ok'

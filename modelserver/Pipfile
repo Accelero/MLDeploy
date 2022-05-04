@@ -11,6 +11,7 @@ torchvision = "*"
 paho-mqtt = "*"
 onnx = "*"
 onnxruntime = "*"
+influxdb-client = {extras = ["ciso"], version = "*"}
 
 [dev-packages]
 autopep8 = "*"

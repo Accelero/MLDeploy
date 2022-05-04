@@ -6,7 +6,7 @@ import paho.mqtt.client as mqtt
 import json
 import threading
 
-def generateSineSample(start_time, ampl=1, freq=10, phase=0, offset=1, noise=0.2):
+def generateSineSample(start_time, ampl=1, freq=10, phase=0, offset=0, noise=0.2):
     time_stamp = time.time()
     signal = ampl*math.sin((time_stamp - start_time)*2*math.pi*freq+phase)+offset
     rand_noise = random.uniform(-noise, noise)
@@ -51,7 +51,7 @@ class SignalGenerator():
 
 
 if __name__=='__main__':
-    gen = SignalGenerator(0.01, .05)
+    gen = SignalGenerator(0.01, 1)
     gen.start()
     time.sleep(2)
     gen.stop()
