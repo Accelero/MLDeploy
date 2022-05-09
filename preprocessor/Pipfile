@@ -4,20 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-flask = "*"
-requests = "*"
-torch = "*"
-torchvision = "*"
-paho-mqtt = "*"
-onnx = "*"
-onnxruntime = "*"
 influxdb-client = {extras = ["ciso"], version = "*"}
+update = "*"
+pandas = "*"
 
 [dev-packages]
-jupyter = "*"
+autopep8 = "*"
 matplotlib = "*"
-pandas = "*"
-snakeviz = "*"
 
 [requires]
 python_version = "3.9"

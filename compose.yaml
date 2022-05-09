@@ -59,3 +59,9 @@ services:
     depends_on:
       - influxdb
       
+  preprocessor:
+    build: preprocessor
+    networks:
+      - ml_net
+    depends_on:
+      - influxdb
