@@ -1,17 +1,20 @@
-FROM python:3.9
+FROM python:3.9.12-slim
 
-RUN pip install micropipenv
+RUN apt-get update && apt-get install build-essential -y
 
-COPY Pipfile.lock Pipfile.lock
+RUN adduser appuser
+USER appuser
+WORKDIR /home/appuser
 
-RUN micropipenv install
+RUN pip install --user micropipenv
 
-COPY app app
+ENV PATH="/home/appuser/.local/bin:${PATH}"
 
-WORKDIR /app
+COPY --chown=appuser:appuser Pipfile.lock Pipfile.lock
+RUN micropipenv install -- --user
 
-RUN useradd -u 1234 noadmin
+COPY --chown=appuser:appuser app app
 
-USER noadmin
+WORKDIR /home/appuser/app
 
 ENTRYPOINT ["python", "-u", "main.py"]

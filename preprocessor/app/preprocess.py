@@ -29,17 +29,21 @@ def preprocess(input: pd.DataFrame):
             df = input
             if not df.empty:
                 df.set_index('_time', inplace=True)
-
-                end = df.index.max()
-                start = df.index.max()-pd.to_timedelta(config.window_width)
+                end = df.loc[df.index[0],'_stop']
+                start = df.loc[df.index[0],'_start']
                 new_time_index = pd.date_range(
                     start=start, end=end, freq='50ms', inclusive='right')
                 df = df.groupby(new_time_index[new_time_index.searchsorted(
-                    df.index, side='left')]).mean().interpolate()
+                    df.index, side='left')]).mean()
+                df = df.reindex(index=new_time_index)
+                df = df.interpolate(method='linear', limit_direction='both')
                 df.index.name = '_time'
 
                 df.drop(df.columns.difference(['_value']), axis=1, inplace=True)
-                return df.index[-1], df.to_csv(columns=['_value'], header=False, index=False)
+                time_stamp = df.index[-1]
+                feature = df.to_csv(columns=['_value'], header=False, index=False)
+                
+                return time_stamp, feature
 
 
 def run():
@@ -65,4 +69,5 @@ def stop():
 
 if __name__=='__main__':
     df = query_api.query_data_frame(query)
-    print(preprocess(df))
+    a, b = preprocess(df)
+    print(a, b, len(b), sep='\n')

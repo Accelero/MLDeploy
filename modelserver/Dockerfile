@@ -10,7 +10,7 @@ COPY app app
 
 WORKDIR /app
 
-ENV DOCKERMODE 1
+ENV DOCKERMODE=1
 
 RUN useradd -u 1234 noadmin
 

@@ -1,17 +1,24 @@
 # TODOs
+- slim down and optimize docker-builts
+- create IOWrapper Python package
 
 ## Modelserver
 - Flask Server Production setup (Gunicorn)
-- Staged docker build
 - Train sliding window autoencoder
 - Setup Subscriptions
 - cleanup
+- update mainloop
+- optimize dockerfile
 
 ## Preprocessor
-- Create sliding window featurizer
+- make code more reusable
+- startup routine
+- auto create db if not existing
+- optimize dockerfile
 
 ## Telegraf
 - Build Docker container with custom config
 
 ## Influxdb
 - Define how dbs are automatically created and setup
+- Build Docker container with custom config
