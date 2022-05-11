@@ -1,35 +1,29 @@
-# main function and entry point for the modelserver
-
-import mqttclient
-import threading
+import asyncio
+import signal
 import os
 import subprocess
-import signal
 
-shutdownFlag = threading.Event()
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
+shutdownEvent = asyncio.Event()
 
 
 def signalHandler(signum, frame):
-    shutdownFlag.set()
+    loop.call_soon_threadsafe(shutdownEvent.set)
 
 
-def main():
+async def main():
 
-    os.environ['FLASK_APP'] = 'app/restapi.py'
+    os.environ['FLASK_APP'] = 'restapi.py'
     os.environ['FLASK_ENV'] = 'development'
     flaskserver = subprocess.Popen(
-        ['flask', 'run', '-h', 'localhost', '-p', '9000'], shell=False)
+        ['flask', 'run', '-h', '0.0.0.0', '-p', '9000'], shell=False)
 
-    mqttclient.client.loop_start()
-
-    while not shutdownFlag.wait(1):
-        pass
+    await shutdownEvent.wait()
 
     flaskserver.terminate()
-    mqttclient.client.loop_stop()
-
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signalHandler)
     signal.signal(signal.SIGTERM, signalHandler)
-    main()
+    loop.run_until_complete(main())

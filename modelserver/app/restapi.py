@@ -1,36 +1,36 @@
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, request, Response
 import inference
-from config import config
+from line_protocol_parser import parse_line
+import numpy as np
+from influxdb_client import InfluxDBClient, Point
+from influxdb_client.client.write_api import SYNCHRONOUS
 
 app = Flask(__name__.split('.')[0])
 
-#rest functions
-@app.route('/evalloss', methods=['POST'])
-def evalloss():
-    # Get JSON from http message body
-    inputData = request.get_json(force=True)
-    # Go to eval() and return result
-    return jsonify(inference.eval(inputData))
+url = 'http://influxdb:8086'
+username = ''
+password = ''
+token = f'{username}:{password}'
 
-@app.route('/config', methods=['GET'])
-def setCfgVar():
-    section = request.args.get('section')
-    option = request.args.get('option')
-    value = request.args.get('value')
-    try:
-        config.set(section, option, value)
-    finally:
-        return render_template('config.html', parent_dict=config.toDict())
-    
-@app.route('/config/save')
-def saveCfg():
-    try:
-        config.save()
-    finally:
-        return 'config saved'
+database = 'features'
+retention_policy = 'autogen'
+bucket = f'{database}/{retention_policy}'
+
+client = InfluxDBClient(url=url, token=token)
+write_api = client.write_api(write_options=SYNCHRONOUS)
+
+def parse(input_data):
+    dict_data = parse_line(input_data)
+    time_stamp = dict_data['time']
+    feature = np.fromstring(dict_data['fields']['feature'], sep='\n', dtype=np.float32)
+    feature = np.reshape(feature, (1,100))
+    return time_stamp, feature
+
 
 @app.route('/write', methods=['POST'])
-def printer():
-    # inputData = request.get_json(force=True)
-    print(request.get_data(as_text=True))
-    return 'ok'
+def evalloss():
+    time_stamp, feature = parse(request.data)
+    loss = inference.eval(feature)
+    with write_api as _write_client:
+        _write_client.write('predictions/autogen','wbk', record={'measurement':'prediction', 'fields':{'loss':loss.item()}, 'time': time_stamp})
+    return Response(status=200)

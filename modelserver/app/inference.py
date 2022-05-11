@@ -1,17 +1,14 @@
-import torch
-from autoencoder import Autoencoder
-import torch.nn as nn
+import numpy as np
+import onnx
+import onnxruntime
 from pathlib import Path
 
-model = Autoencoder()
-model.load_state_dict(torch.load(Path(__file__).parent / 'autoencoder.pt'))
-model.eval()
-criterion = nn.MSELoss()
+onnx_model = onnx.load(Path(__file__).parent / 'autoencoder.onnx')
+onnx.checker.check_model(onnx_model)
+ort_session = onnxruntime.InferenceSession('autoencoder.onnx')
 
-@torch.no_grad()
 def eval(inputData):
-    inputData = torch.tensor(inputData)
-
-    recon = model(inputData)
-    loss = criterion(inputData, recon).item()
+    ort_input = {'input': inputData}
+    recon = ort_session.run(None, ort_input)
+    loss = np.mean((recon-inputData)**2, axis=2)
     return loss

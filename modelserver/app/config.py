@@ -27,5 +27,5 @@ class ExtendedConfigParser(configparser.ConfigParser):
 
 config = ExtendedConfigParser(pathToConfig)
 
-if not os.environ.get('DOCKERMODE'):
+if os.environ.get('DEVMODE') == '1':
     config.read(pathToConfigOverrides)

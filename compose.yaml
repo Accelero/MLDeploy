@@ -65,3 +65,10 @@ services:
       - ml_net
     depends_on:
       - influxdb
+  
+  modelserver:
+    build: modelserver
+    networks:
+      - ml_net
+    depends_on:
+      - influxdb

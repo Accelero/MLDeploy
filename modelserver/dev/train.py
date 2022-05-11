@@ -5,20 +5,34 @@ from autoencoder import Autoencoder
 from pathlib import Path
 import pandas as pd
 import numpy as np
+from influxdb_client import InfluxDBClient, Point
+from influxdb_client.client.write_api import SYNCHRONOUS
 
 def train():
     # Setup training data
-    data_path = './data/testset.csv'
-    df = pd.read_csv(data_path)
-    df = df.iloc[3:, 6]
-    df = pd.to_numeric(df)
-    index = 0
+    url = 'http://localhost:8086'
+    username = ''
+    password = ''
+    token = f'{username}:{password}'
+
+    database = 'features'
+    retention_policy = 'autogen'
+    bucket = f'{database}/{retention_policy}'
+
+    client = InfluxDBClient(url=url, token=token)
+    write_api = client.write_api(write_options=SYNCHRONOUS)
+    query_api = client.query_api()
+
+    query = f'from(bucket: "{bucket}")\
+    |> range(start: -1y)\
+    |> tail(n: 10000)\
+    |> filter(fn: (r) => r["_field"] == "feature")'
+    df = query_api.query_data_frame(query)
     output = []
-    while index in range(0, len(df.index)):
-        temp=df.iloc[index:index+512]
-        if len(temp)==512:
-            output.append(temp.to_list())
-        index = index+10
+    for feature in df['_value']:
+        f = np.fromstring(feature, sep='\n', dtype=np.float32)
+        output.append(f)
+    output = np.array(output)
 
     training_data = torch.tensor(output, dtype=torch.float32)
     data_loader = torch.utils.data.DataLoader(dataset=training_data, batch_size=16, shuffle=True)
