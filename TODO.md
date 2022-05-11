@@ -1,13 +1,14 @@
 # TODOs
 - slim down and optimize docker-builts
 - create IOWrapper Python package
+- Logging
+- build with custom config files
 
 ## Modelserver
 - Flask Server Production setup (Gunicorn)
 - Train sliding window autoencoder
 - Setup Subscriptions
 - cleanup
-- update mainloop
 - optimize dockerfile
 
 ## Preprocessor
