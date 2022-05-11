@@ -1,5 +1,3 @@
-FROM telegraf
+FROM telegraf:alpine
 
-VOLUME /etc/telegraf
-
-COPY telegraf.conf /etc/telegraf
+COPY telegraf.conf /etc/telegraf/telegraf.conf
