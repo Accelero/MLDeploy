@@ -5,6 +5,9 @@ import asyncio
 import paho.mqtt.client as mqtt
 import json
 import threading
+import logging
+
+
 
 def generateSineSample(start_time, ampl=1, freq=10, phase=0, offset=0, noise=0.2):
     time_stamp = time.time()
@@ -43,6 +46,7 @@ class SignalGenerator():
         self.loop.run_until_complete(self.send(self.send_interval))
 
     def start(self):
+        logging.info('gen started')
         self.thread.start()
 
     def stop(self):
