@@ -26,7 +26,7 @@
 ## Configs
 - Vars defined in code, so linter recognizes them   x
 - Vars declared in one place    x
-- Vars are thread and multiprocessing safe  x
+- Vars are thread safe  x
 - Functionality decoupled and maximum reusability of code
 - save, set methods x
 - read, load methods    x
