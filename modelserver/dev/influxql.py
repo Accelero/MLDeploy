@@ -6,6 +6,7 @@ def post(params):
     r = requests.post(url=url, params=params)
     print(r.content)
 
+
 def drop():
     params = {'q':'DROP SUBSCRIPTION modelserver ON features.autogen'}
     post(params)
@@ -18,7 +19,11 @@ def create():
     params = {'q':'CREATE SUBSCRIPTION modelserver ON features.autogen DESTINATIONS ALL \'http://modelserver:9000/\''}
     post(params)
 
+def createdb():
+    params = {'q':'CREATE DATABASE test '}
+    post(params)
+
 
 if __name__=='__main__':
-    create()
-    show()
+    createdb()
+    # show()

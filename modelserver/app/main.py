@@ -2,6 +2,7 @@ import asyncio
 import signal
 import os
 import subprocess
+import requests
 
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
@@ -13,6 +14,20 @@ def signalHandler(signum, frame):
 
 
 async def main():
+    r = requests.models.Response()
+    url = 'http://influxdb:8086/query'
+    while r.status_code != 200:
+        try:
+            params = {'q':'CREATE SUBSCRIPTION modelserver ON features.autogen DESTINATIONS ALL \'http://modelserver:9000/\''}
+            r = requests.post(url=url, params=params)
+        except:
+            pass
+    while r.status_code != 200:
+        try:
+            params = {'q':'CREATE DATABASE predictions'}
+            r = requests.post(url=url, params=params)
+        except:
+            pass
 
     os.environ['FLASK_APP'] = 'restapi.py'
     os.environ['FLASK_ENV'] = 'development'
@@ -20,7 +35,8 @@ async def main():
         ['flask', 'run', '-h', '0.0.0.0', '-p', '9000'], shell=False)
 
     await shutdownEvent.wait()
-
+    params = {'q':'DROP SUBSCRIPTION modelserver ON features.autogen'}
+    requests.post(url=url, params=params)
     flaskserver.terminate()
 
 if __name__ == '__main__':

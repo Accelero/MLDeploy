@@ -8,25 +8,31 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /c//docker-volumes/mldeploy/influx_data
+      device: /c//docker-volumes/mldeploy/influx/data
   influx_config:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /c//docker-volumes/mldeploy/influx_config
+      device: /c//docker-volumes/mldeploy/influx/config
   telegraf_config:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /c//docker-volumes/mldeploy/telegraf_config
+      device: /c//docker-volumes/mldeploy/telegraf/config
   chronograf:
     driver: local
     driver_opts:
       type: none
       o: bind
       device: /c//docker-volumes/mldeploy/chronograf
+  mosquitto_config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /c//docker-volumes/mldeploy/mosquitto/config
 
 services:
   influxdb:
@@ -47,9 +53,19 @@ services:
       - telegraf_config:/etc/telegraf
     depends_on:
       - influxdb
+      - mosquitto
+
+  mosquitto:
+    build: mosquitto
+    networks:
+      - ml_net
+    ports:
+      - 1883:1883
+    volumes:
+      - mosquitto_config:/mosquitto/config
 
   chronograf:
-    image: chronograf
+    build: chronograf
     networks: 
       - ml_net
     ports:

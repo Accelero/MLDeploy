@@ -7,6 +7,7 @@ name = "pypi"
 influxdb-client = {extras = ["ciso"], version = "*"}
 update = "*"
 pandas = "*"
+requests = "*"
 
 [dev-packages]
 autopep8 = "*"

@@ -1,7 +1,28 @@
 # MLDeploy
 
-To run scripts from the /dev directory:
-1. create an .env file in the project root and add the line PYTHONPATH=app
-2. run pipenv shell
+## Demo
+### 1. Build App
+1. [Download](https://www.docker.com/products/docker-desktop/) and install Docker Desktop
 
-This adds the /app directory to the PYTHONPATH environment variable of your python virtual environment. Absolute imports can now find modules in /app.
+2. Open terminal at project root "MLDeploy/" and run `docker-compose up`
+
+### 2. Run simulator
+1. [Download](https://www.python.org/downloads/) and install Python 3.9
+
+2. **Install pipenv:** Open terminal with privileges and run `pip install pipenv` to isntall system wide. Parameter `--user` can be used to install only for the current user. Make sure pipenv is added to the PATH environment variable (system or user PATH respectively).
+
+3. **Create python virtual environment for "controllersim" subproject and install dependencies:** Open terminal at "MLDeploy/controllersim" and run `pipenv install`. 
+
+4. **Run controller simulator:** Open terminal at "MLDeploy/controllersim" and run `pipenv shell` to use virtual environment and then run `python app/main.py` to start simulator. 
+
+5. Open web browser at [localhost:8888](http://localhost:8888/)
+
+6. Navigate to Dashboards &rarr; MLOverview
+
+7. Set query time frame and update rate in the top right corner
+![](/docs/images/chronograph_dashboard.png "Chronograph Dashboard")
+
+8. Press/hold "a" on keyboard to create anomaly (frequency change)
+
+## Development
+todo

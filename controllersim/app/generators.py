@@ -6,6 +6,9 @@ import asyncio
 import json
 import time
 import signal
+import logging
+
+
 
 mqtt_broker_ip = config.get('MQTT', 'broker_ip')
 mqtt_broker_port = config.getint('MQTT', 'broker_port', fallback=1883)
@@ -24,11 +27,18 @@ class Sensor():
     def run(self):
         signal.signal(signal.SIGINT, signal.SIG_IGN)
         self.mqtt_client = mqtt.Client()
-        self.mqtt_client.connect(host=mqtt_broker_ip, port=mqtt_broker_port)
+        def foo():
+            logging.info('bar')
+        self.mqtt_client.on_connect_fail = foo()
+        try:
+            self.mqtt_client.connect(host=mqtt_broker_ip, port=mqtt_broker_port)
+        except: pass
+        self.mqtt_client.loop_start()
 
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         loop.run_until_complete(asyncio.gather(self.sample_coro(), self.send_coro()))
+        self.mqtt_client.loop_stop()
 
     async def sample_coro(self):
         async def sample_subcoro():
@@ -57,7 +67,4 @@ class Sensor():
         self.process.join()
 
 if __name__ == '__main__':
-    sens1 = Sensor()
-    sens1.start()
-    time.sleep(10)
-    sens1.stop()
+    pass

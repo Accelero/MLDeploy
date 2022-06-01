@@ -1,6 +1,7 @@
 import asyncio
 import signal
 import preprocess
+import requests
 
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
@@ -12,8 +13,19 @@ def signalHandler(signum, frame):
 
 
 async def main():
+    r = requests.models.Response()
+    url = 'http://influxdb:8086/query'
+    while r.status_code != 200:
+        try:
+            params = {'q':'CREATE DATABASE features'}
+            r = requests.post(url=url, params=params)
+        except:
+            pass
+
     preprocess.start()
+
     await shutdownEvent.wait()
+
     preprocess.stop()
     preprocess.preprocess_thread.join()
 
