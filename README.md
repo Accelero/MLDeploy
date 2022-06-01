@@ -20,6 +20,7 @@
 6. Navigate to Dashboards &rarr; MLOverview
 
 7. Set query time frame and update rate in the top right corner
+
 ![](/docs/images/chronograph_dashboard.png "Chronograph Dashboard")
 
 8. Press/hold "a" on keyboard to create anomaly (frequency change)
