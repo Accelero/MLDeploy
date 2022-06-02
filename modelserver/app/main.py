@@ -22,6 +22,7 @@ async def main():
             r = requests.post(url=url, params=params)
         except:
             pass
+    r.status_code = None
     while r.status_code != 200:
         try:
             params = {'q':'CREATE DATABASE predictions'}
