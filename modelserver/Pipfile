@@ -6,9 +6,6 @@ name = "pypi"
 [packages]
 flask = "*"
 requests = "*"
-torch = "*"
-torchvision = "*"
-paho-mqtt = "*"
 onnx = "*"
 onnxruntime = "*"
 influxdb-client = {extras = ["ciso"], version = "*"}
