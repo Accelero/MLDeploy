@@ -6,8 +6,6 @@ name = "pypi"
 [packages]
 flask = "*"
 requests = "*"
-torch = "*"
-torchvision = "*"
 paho-mqtt = "*"
 onnx = "*"
 onnxruntime = "*"
@@ -15,10 +13,8 @@ influxdb-client = {extras = ["ciso"], version = "*"}
 line-protocol-parser = "*"
 
 [dev-packages]
+autopep8 = "*"
 jupyter = "*"
-matplotlib = "*"
-pandas = "*"
-snakeviz = "*"
 
 [requires]
 python_version = "3.9"

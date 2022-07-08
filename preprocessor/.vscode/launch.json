@@ -5,7 +5,20 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Aktuelle Datei",
+            "name": "Docker: Remote attach",
+            "type": "python",
+            "request": "attach",
+            "port": 5678,
+            "host": "localhost",
+            "pathMappings":[
+                {
+                    "localRoot": "${workspaceFolder}/app",
+                    "remoteRoot": "/home/appuser/app"
+                }
+            ]
+        },
+        {
+            "name": "Python: Current file",
             "type": "python",
             "request": "launch",
             "program": "${file}",

@@ -17,4 +17,4 @@ COPY --chown=appuser:appuser app app
 
 WORKDIR /home/appuser/app
 
-ENTRYPOINT ["python", "-u", "main.py"]
+CMD ["python", "-u", "main.py"]
