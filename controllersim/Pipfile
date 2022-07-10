@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 paho-mqtt = "*"
 keyboard = "*"
+mldeploy = {editable = true, path = "./../custom_packages"}
 
 [dev-packages]
 autopep8 = "*"

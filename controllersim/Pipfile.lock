@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "aab73b229f8e625b8c2b937685de5f25f80c08743a0aa3a8b416d358a2bd58d1"
+            "sha256": "be9b3c1afc68a30594cafa5c3c594297d01dbd02230ceabb765bc752fb1707bf"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -23,6 +23,10 @@
             ],
             "index": "pypi",
             "version": "==0.13.5"
+        },
+        "mldeploy": {
+            "editable": true,
+            "path": "./../custom_packages"
         },
         "paho-mqtt": {
             "hashes": [
