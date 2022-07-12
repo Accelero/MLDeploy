@@ -83,7 +83,9 @@ services:
       - influxdb
   
   modelserver:
-    build: modelserver
+    build:
+      dockerfile: modelserver/Dockerfile
+      context: ./
     networks:
       - ml_net
     depends_on:

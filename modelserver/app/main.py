@@ -16,17 +16,17 @@ def signalHandler(signum, frame):
 async def main():
     r = requests.models.Response()
     url = 'http://influxdb:8086/query'
-    while r.status_code != 200:
+    while r.status_code != 200 and not shutdownEvent.is_set():
         try:
             params = {'q':'CREATE SUBSCRIPTION modelserver ON features.autogen DESTINATIONS ALL \'http://modelserver:9000/\''}
-            r = requests.post(url=url, params=params)
+            r = requests.post(url=url, params=params, timeout=1)
         except:
             pass
     r.status_code = None
-    while r.status_code != 200:
+    while r.status_code != 200 and not shutdownEvent.is_set():
         try:
             params = {'q':'CREATE DATABASE predictions'}
-            r = requests.post(url=url, params=params)
+            r = requests.post(url=url, params=params, timeout=1)
         except:
             pass
 

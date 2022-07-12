@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "0d9235bd80db9cc541f5b35035325a6d232b461d2e62e9aef12adc5cc607344d"
+            "sha256": "e4a307b0ee74db50dc6470dfc99447cce1e06df5857697661219250b91054538"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -213,8 +213,11 @@
             "version": "==2.1.1"
         },
         "mldeploy": {
-            "editable": true,
-            "path": "./../custom_packages"
+            "hashes": [
+                "sha256:91cbcdaa4e16ed752f23d1c7094b19df4f6a414092c7ee2185f689539678bbed"
+            ],
+            "path": "./../custom_packages/dist/mldeploy-0.0.1-py3-none-any.whl",
+            "version": "==0.0.1"
         },
         "numpy": {
             "hashes": [
