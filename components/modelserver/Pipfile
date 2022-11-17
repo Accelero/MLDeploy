@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+flask = "*"
+requests = "*"
+paho-mqtt = "*"
+onnx = "*"
+onnxruntime = "*"
+influxdb-client = {extras = ["ciso"], version = "*"}
+line-protocol-parser = "*"
+
+[dev-packages]
+autopep8 = "*"
+jupyter = "*"
+
+[requires]
+python_version = "3.9"

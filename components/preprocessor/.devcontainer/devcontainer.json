@@ -1,0 +1,13 @@
+{
+    "name": "Preprocessor",
+    "dockerComposeFile": ["../../../compose.yaml", "../../../dev-compose.yaml"],
+    "service": "preprocessor",
+    "runServices": ["preprocessor"],
+    "shutdownAction": "none",
+    "extensions": ["ms-python.python", "ms-python.vscode-pylance"],
+    // "remoteUser": "root",
+    // "mounts": ["type=bind,src=${localWorkspaceFolder},dst=/workspace", "type=volume,target=/.venv"],
+    "remoteEnv": {"PATH": "/.venv/bin:${containerEnv:PATH}", "PYTHONPATH": "${containerWorkspaceFolder}/app"},
+    "workspaceFolder": "/workspace",
+    "overrideCommand": true
+  }

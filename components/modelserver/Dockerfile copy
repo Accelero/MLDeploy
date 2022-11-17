@@ -1,0 +1,24 @@
+FROM python:3.9-slim AS build
+
+RUN apt-get update && apt-get install build-essential -y
+RUN pip install micropipenv
+COPY lib/python/dist /tmp/lib/python/dist
+COPY components/modelserver/Pipfile.lock /tmp/components/modelserver/Pipfile.lock
+
+
+WORKDIR /tmp/components/modelserver
+RUN micropipenv install -- --user
+
+FROM python:3.9-slim AS release
+
+RUN useradd -ms /bin/bash appuser
+WORKDIR /home/appuser
+ENV PATH="/home/appuser/.local/bin:$PATH"
+
+COPY --from=build --chmod=775 /root/.local .local
+COPY components/modelserver/app /app
+
+WORKDIR /app
+
+USER appuser
+CMD ["python", "-u", "main.py"]

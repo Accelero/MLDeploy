@@ -1,0 +1,10 @@
+services:
+  preprocessor:
+    build: 
+      dockerfile: ./components/preprocessor/Dockerfile
+      context: ./
+      target: build
+    networks:
+      - ml_net
+    depends_on:
+      - influxdb

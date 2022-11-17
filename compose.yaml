@@ -33,10 +33,22 @@ volumes:
       type: none
       o: bind
       device: /docker-volumes/mldeploy/mosquitto/config
+  mosquitto_log:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /docker-volumes/mldeploy/mosquitto/log
+  mosquitto_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /docker-volumes/mldeploy/mosquitto/data
 
 services:
   influxdb:
-    build: influxdb
+    build: ./components/influxdb
     networks:
       - ml_net
     ports:
@@ -46,7 +58,7 @@ services:
       - influx_config:/etc/influxdb
 
   telegraf:
-    build: telegraf
+    build: ./components/telegraf
     networks:
       - ml_net
     volumes:
@@ -56,16 +68,18 @@ services:
       - mosquitto
 
   mosquitto:
-    build: mosquitto
+    build: ./external/mosquitto
     networks:
       - ml_net
     ports:
       - 1883:1883
     volumes:
       - mosquitto_config:/mosquitto/config
+      - mosquitto_log:/mosquitto/log
+      - mosquitto_data:/mosquitto/data
 
   chronograf:
-    build: chronograf
+    build: ./components/chronograf
     networks: 
       - ml_net
     ports:
@@ -76,7 +90,9 @@ services:
       - influxdb
       
   preprocessor:
-    build: preprocessor
+    build: 
+      dockerfile: ./components/preprocessor/Dockerfile
+      context: ./
     networks:
       - ml_net
     depends_on:
@@ -84,7 +100,7 @@ services:
   
   modelserver:
     build:
-      dockerfile: modelserver/Dockerfile
+      dockerfile: ./components/modelserver/Dockerfile
       context: ./
     networks:
       - ml_net
