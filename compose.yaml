@@ -55,7 +55,7 @@ services:
       - 8086:8086
     volumes:
       - influx_data:/var/lib/influxdb
-      - ./docker-volumes/influx/config:/etc/influxdb
+      - ./docker-volumes/influxdb/config:/etc/influxdb
 
   telegraf:
     image: telegraf:alpine
