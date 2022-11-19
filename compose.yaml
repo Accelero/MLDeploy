@@ -4,88 +4,88 @@ networks:
 
 volumes:
   influx_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /docker-volumes/mldeploy/influx/data
-  influx_config:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /docker-volumes/mldeploy/influx/config
-  telegraf_config:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /docker-volumes/mldeploy/telegraf/config
-  chronograf:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /docker-volumes/mldeploy/chronograf
-  mosquitto_config:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /docker-volumes/mldeploy/mosquitto/config
+    # driver: local
+    # driver_opts:
+    #   type: none
+    #   o: bind
+    #   device: ./docker-volumes/influx/data
+  # influx_config:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     o: bind
+  #     device: ./docker-volumes/influx/config
+  # telegraf_config:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     o: bind
+  #     device: ./docker-volumes/telegraf/config
+  # chronograf:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     o: bind
+  #     device: ./docker-volumes/chronograf
+  # mosquitto_config:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     o: bind
+  #     device: ./docker-volumes/mosquitto/config
   mosquitto_log:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /docker-volumes/mldeploy/mosquitto/log
+    # driver: local
+    # driver_opts:
+    #   type: none
+    #   o: bind
+    #   device: ./docker-volumes/mosquitto/log
   mosquitto_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /docker-volumes/mldeploy/mosquitto/data
+    # driver: local
+    # driver_opts:
+    #   type: none
+    #   o: bind
+    #   device: ./docker-volumes/mosquitto/data
 
 services:
   influxdb:
-    build: ./components/influxdb
+    image: influxdb:1.8.10-alpine
     networks:
       - ml_net
     ports:
       - 8086:8086
     volumes:
       - influx_data:/var/lib/influxdb
-      - influx_config:/etc/influxdb
+      - ./docker-volumes/influx/config:/etc/influxdb
 
   telegraf:
-    build: ./components/telegraf
+    image: telegraf:alpine
     networks:
       - ml_net
     volumes:
-      - telegraf_config:/etc/telegraf
+      - ./docker-volumes/telegraf/config:/etc/telegraf
     depends_on:
       - influxdb
       - mosquitto
 
   mosquitto:
-    build: ./external/mosquitto
+    image: eclipse-mosquitto
     networks:
       - ml_net
     ports:
       - 1883:1883
     volumes:
-      - mosquitto_config:/mosquitto/config
+      - ./docker-volumes/mosquitto/config:/mosquitto/config
       - mosquitto_log:/mosquitto/log
       - mosquitto_data:/mosquitto/data
 
   chronograf:
-    build: ./components/chronograf
+    image: chronograf:alpine
     networks: 
       - ml_net
     ports:
       - 8888:8888
     volumes:
-      - chronograf:/var/lib/chronograf
+      - ./docker-volumes/chronograf:/var/lib/chronograf
     depends_on:
       - influxdb
       
