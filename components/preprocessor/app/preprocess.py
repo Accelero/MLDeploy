@@ -45,11 +45,20 @@ def preprocess(input: pd.DataFrame):
                 
                 return time_stamp, feature
 
+
 def resample(df: pd.DataFrame):
     df.set_index('_time', inplace=True)
     series = df['_value'].squeeze()
-    print(series)
-    print(series.resample('50 ms', origin='end').mean())
+    if isinstance(series, pd.Series):
+        window_start = series.index[-1] - pd.to_timedelta('5s')
+        print(window_start)
+        series = series.reindex(series.index.insert(series.index.searchsorted(window_start), window_start), method=None)
+        series.interpolate(method='time', limit_direction='both', inplace=True)
+        series.drop(series[series.index < window_start].index, inplace=True)
+        print(series)
+        print(series.resample('50 ms', origin='end', closed='right', label='right').mean())
+    else:
+        raise TypeError('Dataframe has wrong structure')
 
 
 def run():
