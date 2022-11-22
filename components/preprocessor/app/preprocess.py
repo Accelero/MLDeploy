@@ -45,6 +45,12 @@ def preprocess(input: pd.DataFrame):
                 
                 return time_stamp, feature
 
+def resample(df: pd.DataFrame):
+    df.set_index('_time', inplace=True)
+    series = df['_value'].squeeze()
+    print(series)
+    print(series.resample('50 ms', origin='end').mean())
+
 
 def run():
     while not stopEvent.is_set():
@@ -69,5 +75,5 @@ def stop():
 
 if __name__=='__main__':
     df = query_api.query_data_frame(query)
-    a, b = preprocess(df)
-    print(a, b, len(b), sep='\n')
+    resample(df)
+    # print(a, b, len(b), sep='\n')

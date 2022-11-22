@@ -2,7 +2,7 @@
     "name": "Model Server",
     "dockerComposeFile": ["../../../compose.yaml", "../../../dev-compose.yaml"],
     "service": "modelserver",
-    // "runServices": ["modelserver"],
+    "runServices": ["modelserver"],
     "shutdownAction": "none",
     "extensions": ["ms-python.python", "ms-python.vscode-pylance"],
     // "remoteUser": "root",
