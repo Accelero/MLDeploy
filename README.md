@@ -7,9 +7,7 @@ In this branch the project was moved to VSCode Development Container. This makes
 ### 1. Build App
 1. [Download](https://www.docker.com/products/docker-desktop/) and install Docker (for Linux) or Docker Desktop (for Windows and MacOS)
 
-2. Open terminal in project root "MLDeploy/" and run `./setup-docker-volumes.ps1`
-
-3. Afterwards, in the terminal in "MLDeploy/" run `docker compose up -d`
+2. Run "start.bat" by double clicking it, or running it from a terminal
 
 ### 2. Run simulator
 1. [Download](https://www.python.org/downloads/) and install Python 3.9
@@ -43,9 +41,7 @@ Since the entire application is divided into individual services, Dev Containers
 ### Develop in Container
 1. Launch VSCode
 
-2. Open terminal in project root "MLDeploy/" and run `./setup-docker-volumes.ps1` to create the bind mount directories for the services in "MLDeploy/docker-volumes/..." and populate them with preconfigured config files.
-
-3. In the terminal in "MLDeploy/" run `docker compose up -d` to launch all services. 
+2. Run "start.bat" by double clicking it, or running it from a terminal
 
 4. To start development of an existing service, open the component's subdirectory in a Dev Container. Press F1 to open the command palette and call "Dev Containers: Open Folder in Container..." and select a folder of an existing service (e.g. "MLDeploy/components/modelserver/").
 The Dev Container should be built and replace the service in the active compose network.\

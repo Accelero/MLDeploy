@@ -1,39 +1,10 @@
 services:
   modelserver:
+    image: dev/modelserver
     build:
-      dockerfile: ./components/modelserver/Dockerfile
-      context: ./
       target: build
-    networks:
-      - ml_net
-    depends_on:
-      - influxdb
-    volumes:
-      - type: bind
-        source: ./components/modelserver
-        target: /workspace
-      - type: volume
-        source: modelserver_lib
-        target: /.venv
 
   preprocessor:
+    image: dev/preprocessor
     build: 
-      dockerfile: ./components/preprocessor/Dockerfile
-      context: ./
       target: build
-    networks:
-      - ml_net
-    depends_on:
-      - influxdb
-    volumes:
-      - type: bind
-        source: ./components/preprocessor
-        target: /workspace
-      - type: volume
-        source: preprocessor_lib
-        target: /.venv
-    command: /bin/sh -c "while sleep 1000; do :; done"
-
-volumes:
-  preprocessor_lib:
-  modelserver_lib:

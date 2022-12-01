@@ -5,9 +5,21 @@
     "runServices": ["modelserver"],
     "shutdownAction": "none",
     "extensions": ["ms-python.python", "ms-python.vscode-pylance"],
+    // "containerUser": "root",
     // "remoteUser": "root",
-    // "mounts": ["type=bind,src=${localWorkspaceFolder},dst=/workspace", "type=volume,target=/.venv"],
+    "mounts": [
+      {
+        "type":"bind",
+        "source": "${localWorkspaceFolder}",
+        "target":"/workspace"
+      }, 
+      {
+        "type":"volume",
+        "source": "modelserver_dev_lib",
+        "target":"/.venv"
+      }],
     "remoteEnv": {"PATH": "/.venv/bin:${containerEnv:PATH}", "PYTHONPATH": "${containerWorkspaceFolder}/app"},
     "workspaceFolder": "/workspace",
-    "overrideCommand": true
+    "overrideCommand": true,
+    "initializeCommand": "docker compose rm modelserver --stop --force"
   }
