@@ -33,6 +33,15 @@ class SineSampler(Sampler):
         else: 
             self.freq = max(self.freq - self.attack * (time - self.prev_state[0]), self.base_freq)
 
+        '''
+        Move the signal interval up/down by pressing the "u"/"d" key.
+        '''
+        if keyboard.is_pressed('u'):
+            self.offset = self.offset + 2
+
+        if keyboard.is_pressed('d'):
+            self.offset = self.offset - 2
+
         phase = (time - self.prev_state[0]) * 2 * math.pi * self.freq + self.prev_state[1]
         self.prev_state = (time, phase)
         signal = self.ampl * math.sin(phase) + self.offset

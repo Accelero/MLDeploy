@@ -90,3 +90,15 @@ services:
       - ml_net
     depends_on:
       - influxdb
+
+  detection:
+    build: ./detection
+    networks:
+      - ml_net
+    depends_on:
+      - influxdb
+      - telegraf
+      - modelserver
+      - preprocessor
+      - chronograf
+      - mosquitto
