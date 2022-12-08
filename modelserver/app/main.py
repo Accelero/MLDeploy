@@ -3,6 +3,8 @@ import signal
 import os
 import subprocess
 import requests
+import modelserve
+from config import config
 
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
@@ -15,14 +17,14 @@ def signalHandler(signum, frame):
 
 async def main():
     r = requests.models.Response()
-    url = 'http://influxdb:8086/query'
-    while r.status_code != 200 and not shutdownEvent.is_set():
-        try:
-            params = {'q':'CREATE SUBSCRIPTION modelserver ON features.autogen DESTINATIONS ALL \'http://modelserver:9000/\''}
-            r = requests.post(url=url, params=params, timeout=1)
-        except:
-            pass
-    r.status_code = None
+    url = config.parser.get('Influxdb', 'url') + '/query'
+    # while r.status_code != 200 and not shutdownEvent.is_set():
+    #     try:
+    #         params = {'q':'CREATE SUBSCRIPTION modelserver ON features.autogen DESTINATIONS ALL \'http://modelserver:9000/\''}
+    #         r = requests.post(url=url, params=params, timeout=1)
+    #     except:
+    #         pass
+    # r.status_code = None
     while r.status_code != 200 and not shutdownEvent.is_set():
         try:
             params = {'q':'CREATE DATABASE predictions'}
@@ -30,15 +32,23 @@ async def main():
         except:
             pass
 
-    os.environ['FLASK_APP'] = 'restapi.py'
-    os.environ['FLASK_ENV'] = 'development'
-    flaskserver = subprocess.Popen(
-        ['flask', 'run', '-h', '0.0.0.0', '-p', '9000'], shell=False)
+    # os.environ['FLASK_APP'] = 'restapi.py'
+    # os.environ['FLASK_ENV'] = 'development'
+    # flaskserver = subprocess.Popen(
+    #     ['flask', 'run', '-h', '0.0.0.0', '-p', '9000'], shell=False)
+
+    # await shutdownEvent.wait()
+    # params = {'q':'DROP SUBSCRIPTION modelserver ON features.autogen'}
+    # requests.post(url=url, params=params)
+    # flaskserver.terminate()
+
+    modelserve.start()
 
     await shutdownEvent.wait()
-    params = {'q':'DROP SUBSCRIPTION modelserver ON features.autogen'}
-    requests.post(url=url, params=params)
-    flaskserver.terminate()
+
+    modelserve.stop()
+
+    modelserve.modelserve_thread.join()
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signalHandler)

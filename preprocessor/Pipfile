@@ -8,6 +8,9 @@ influxdb-client = {extras = ["ciso"], version = "*"}
 update = "*"
 pandas = "*"
 requests = "*"
+pika = "*"
+func-timeout = "*"
+line-protocol-parser = "*"
 
 [dev-packages]
 autopep8 = "*"

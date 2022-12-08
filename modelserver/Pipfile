@@ -12,6 +12,8 @@ onnxruntime = "*"
 influxdb-client = {extras = ["ciso"], version = "*"}
 line-protocol-parser = "*"
 mldeploy = {path = "./../custom_packages/dist/mldeploy-0.0.1-py3-none-any.whl"}
+pika = "*"
+pandas = "*"
 
 [dev-packages]
 autopep8 = "*"
