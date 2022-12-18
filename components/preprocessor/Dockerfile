@@ -6,21 +6,17 @@ FROM base AS dev
 RUN apt update && apt install build-essential -y
 RUN pip install pipenv
 
-WORKDIR /workspace
 ENV WORKON_HOME="/"
 ENV PIPENV_CUSTOM_VENV_NAME=".venv"
 
 
-FROM base AS build
+FROM dev AS build
 
-RUN apt update && apt install build-essential -y
-RUN pip install pipenv
 COPY components/preprocessor/Pipfile* /workspace/
 
 WORKDIR /workspace
-ENV WORKON_HOME="/"
-ENV PIPENV_CUSTOM_VENV_NAME=".venv"
 RUN pipenv install --deploy --ignore-pipfile
+
 
 FROM base AS release
 

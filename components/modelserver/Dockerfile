@@ -6,20 +6,15 @@ FROM base AS dev
 RUN apt update && apt install build-essential -y
 RUN pip install pipenv
 
-WORKDIR /workspace
 ENV WORKON_HOME="/" \
     PIPENV_CUSTOM_VENV_NAME=".venv"
 
 
-FROM base AS build
+FROM dev AS build
 
-RUN apt update && apt install build-essential -y
-RUN pip install pipenv
 COPY components/modelserver/Pipfile* /workspace/
 
 WORKDIR /workspace
-ENV WORKON_HOME="/" \
-    PIPENV_CUSTOM_VENV_NAME=".venv"
 RUN pipenv install --deploy --ignore-pipfile
 
 
