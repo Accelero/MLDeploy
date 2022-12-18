@@ -1,0 +1,5 @@
+services:
+  preprocessor:
+    image: dev/preprocessor
+    build: 
+      target: dev

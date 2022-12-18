@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from torchvision import datasets, transforms
 from autoencoder import Autoencoder
 from pathlib import Path
 import pandas as pd

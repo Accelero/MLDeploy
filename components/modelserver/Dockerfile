@@ -1,6 +1,16 @@
 FROM python:3.9-slim AS base
 
 
+FROM base AS dev
+
+RUN apt update && apt install build-essential -y
+RUN pip install pipenv
+
+WORKDIR /workspace
+ENV WORKON_HOME="/" \
+    PIPENV_CUSTOM_VENV_NAME=".venv"
+
+
 FROM base AS build
 
 RUN apt update && apt install build-essential -y
