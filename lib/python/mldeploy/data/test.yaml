@@ -1,0 +1,11 @@
+foo:
+  bar:
+    string_var: test123
+    int_var: 53
+    float_var: 5.77
+    bool_var: True
+    list_var:
+      - a
+      - b
+      - c
+    timedelta_var: 5m
