@@ -1,5 +1,5 @@
 @echo off
-@REM This PowerShell script creates and sets up the Docker bind mount directories on the host machine as specified in the compose.yaml.
+@REM This script creates and sets up the Docker bind mount directories on the host machine as specified in the compose.yaml.
 @REM The directories will be created in the folder docker-volumes\... insides this project folder and are ignored by source control (git).
 @REM The folder "docker-volumes" and it's contents will be first deleted and then recreated, if it already exists. 
 
