@@ -21,7 +21,7 @@ sensor_name = 1
 sample_interval = float(config.get('SENSOR_' + str(sensor_name), 'sample_interval'))
 send_interval = float(config.get('SENSOR_' + str(sensor_name), 'send_interval'))
 pos = int(config.get('SENSOR_' + str(sensor_name), 'pos'))
-buffer_size = float(config.get('SENSOR_' + str(sensor_name), 'buffer_size'))
+buffer_size = int(config.get('SENSOR_' + str(sensor_name), 'buffer_size'))
 tab = eval('pe.ProtoProcessLogEntryDataWert.' + config.get('SENSOR_' + str(sensor_name), 'tab_name'))
 resolution_value = int(config.get('SENSOR_' + str(sensor_name), 'resolution'))
 
@@ -30,9 +30,6 @@ mqtt_topic = config.get('MQTT', 'topic')
 
 pos_list = [pos]
 # pos_list = [58228, 28077, 28078, 87005, 87006]
-
-time_diff = None
-time_first = None
 
 buffer = []
 
@@ -57,34 +54,18 @@ def request_process_log_data_stream(stub):
     return containers
 
 def postprocess(container):
-    global time_diff, time_first, buffer, buffer_size
-    global sample_interval
+    global buffer
     arr = []
     for entry in container.entries:
-        if time_first is None:
-            time_first = entry.timestamp
-        if time_diff is None:
-            time_diff = time.time() - time_first
-        time_stamp = time_first + (entry.timestamp - time_first) / 976 + time_diff
-        arr.append([time_stamp,
+        arr.append([
         *[data.protoWert.mFloat for data in entry.protoProcessLogData]])
-
     arr = np.array(arr)
-
     if len(buffer) == 0:
         buffer = arr
     else:
-        buffer = np.unique(np.vstack((np.array(buffer), arr)), axis=0)
-    # sort
-    
-    buffer = buffer[buffer[:, 0].argsort()]
-    
-    
-    end_time = buffer[-1, 0]
-    start_time = end_time - buffer_size
-    buffer = buffer[buffer[:, 0] > start_time]
-    
-
+        buffer = np.vstack((np.array(buffer), arr))
+    if len(buffer) > 0:
+        buffer = buffer[-buffer_size:, :]
     buffer = buffer.tolist()
 
 
@@ -111,12 +92,12 @@ def stop_request(containers):
 def run_grpc_client(containers):
     do_request(containers)
 
-def sample_func():
+def sample_func(time_stamp):
     global buffer
     if len(buffer) == 0:
         print('gRPC still no value')
         return
-    time_stamp, sample_value = buffer.pop()
+    sample_value = buffer.pop(0)[0]
     return time_stamp, sample_value
 
 def signal_handler(containers, grpc_client_thread):
@@ -159,24 +140,18 @@ if __name__ == '__main__':
     # Asyncio.gather is used to start the sleep at the same time as the coroutine, 
     # other than runnning the coroutine and then sleep afterwards. 
     output = []
-    global last_time_stamp
-    last_time_stamp = None
 
     async def sample_loop():
         async def sample_coro():
+            time_stamp = time.time()
             try:
-                time_stamp, sample_value = sample_func()
+                time_stamp, sample_value = sample_func(time_stamp)
             except:
                 return
-            global last_time_stamp
-            
-            if time_stamp == last_time_stamp:
-                return
-            
-            print("time: %s, value: %s, remaining %s" % (
+
+            print("pos: %s, time: %s, value: %s, remaining %s" % (pos,
                 datetime.utcfromtimestamp(time_stamp), sample_value, len(buffer)))
             output.append({'time': time_stamp, 'value': sample_value})
-            last_time_stamp = time_stamp
             return
         while not stop_event.is_set():
             await asyncio.gather(asyncio.sleep(sample_interval), sample_coro())
