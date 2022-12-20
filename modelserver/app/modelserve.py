@@ -40,7 +40,7 @@ def rabbitmq_consumer_run():
     # consume
     logging.info('RabbitMQ cosumer connection starts...')
     start = datetime.now()
-    rabbitmq_consumer.connect(is_consumer=True)
+    rabbitmq_consumer.connect('modelserver_consumer', is_consumer=True)
     rabbitmq_consumer.setup(rabbitmq_consumer_exchange)
     rabbitmq_consumer.subscribe()
     end = datetime.now()
@@ -51,7 +51,7 @@ def rabbitmq_producer_run():
     # produce
     logging.info('RabbitMQ producer connection starts...')
     start = datetime.now()
-    rabbitmq_producer.connect(is_consumer=False)
+    rabbitmq_producer.connect('modelserver_producer', is_consumer=False)
     rabbitmq_producer.setup(rabbitmq_producer_exchange)
     end = datetime.now()
     logging.info('RabbitMQ producer connection takes %ss' % (end - start).total_seconds())
@@ -99,5 +99,6 @@ def start():
 
 def stop():
     stopEvent.set()
+    modelserve_thread.join()
     rabbitmq_consumer.disconnect()
     # rabbitmq_producer.disconnect()

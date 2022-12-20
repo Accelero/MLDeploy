@@ -29,8 +29,6 @@ async def main():
 
     preprocess.stop()
 
-    preprocess.preprocess_thread.join()
-
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signalHandler)

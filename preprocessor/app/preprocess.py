@@ -26,6 +26,7 @@ rabbitmq_broker_ip = config.parser.get('RabbitMQ', 'broker_ip')
 rabbitmq_broker_port = config.parser.get('RabbitMQ', 'broker_port')
 rabbitmq_consumer_exchange = config.parser.get('RabbitMQ', 'consumer_exchange')
 rabbitmq_consumer_data_format = config.parser.get('RabbitMQ', 'consumer_data_format')
+rabbitmq_consumer_topic = config.parser.get('RabbitMQ', 'consumer_topic')
 
 rabbitmq_consumer = RabbitMQClient(rabbitmq_broker_ip, rabbitmq_broker_port)
 rabbitmq_producer_exchange = config.parser.get('RabbitMQ', 'producer_exchange')
@@ -60,10 +61,10 @@ def rabbitmq_consumer_run():
     # consume
     logging.info('RabbitMQ cosumer connection starts...')
     start = datetime.now()
-    rabbitmq_consumer.connect(is_consumer=True)
+    rabbitmq_consumer.connect('preprocessor_consumer', is_consumer=True)
     rabbitmq_consumer.setup(rabbitmq_consumer_exchange)
     rabbitmq_consumer.subscribe(window_width, frequency, 
-        rabbitmq_consumer_data_format)
+        rabbitmq_consumer_data_format, rabbitmq_consumer_topic)
     end = datetime.now()
     logging.info('RabbitMQ consumer connection takes %ss' % (end - start).total_seconds())
     rabbitmq_consumer.consume()
@@ -72,7 +73,7 @@ def rabbitmq_producer_run():
     # produce
     logging.info('RabbitMQ producer connection starts...')
     start = datetime.now()
-    rabbitmq_producer.connect(is_consumer=False)
+    rabbitmq_producer.connect('preprocessor_producer', is_consumer=False)
     rabbitmq_producer.setup(rabbitmq_producer_exchange)
     end = datetime.now()
     logging.info('RabbitMQ producer connection takes %ss' % (end - start).total_seconds())
@@ -90,7 +91,6 @@ def preprocess(input: pd.DataFrame):
                 df = df.reindex(index=new_time_index)
                 df = df.interpolate(method='linear', limit_direction='both')
                 df.index.name = '_time'
-                # df.drop(df.columns.difference(['_value']), axis=1, inplace=True)
                 time_stamp = df.index[-1]
                 feature = df.to_csv(columns=['_value'], header=False, index=False)
                 return time_stamp, feature
@@ -142,6 +142,7 @@ def start():
 
 def stop():
     stopEvent.set()
+    preprocess_thread.join()
     rabbitmq_consumer.disconnect()
     rabbitmq_producer.disconnect()
 

@@ -48,7 +48,7 @@ async def main():
 
     modelserve.stop()
 
-    modelserve.modelserve_thread.join()
+
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signalHandler)

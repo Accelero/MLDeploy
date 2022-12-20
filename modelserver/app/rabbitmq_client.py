@@ -15,10 +15,10 @@ class RabbitMQClient():
         self.buffer = None
         self.buffer_full = False
 
-    def connect(self, is_consumer=False):
+    def connect(self, name, is_consumer=False):
         self.is_consumer = is_consumer
-        params = pika.ConnectionParameters(
-            self.broker_ip, self.broker_port)
+        params = pika.ConnectionParameters(self.broker_ip, self.broker_port, client_properties={
+        'connection_name': name})
         while not self.connected:
             try:
                 self.connection = pika.BlockingConnection(params) # Connect to broker
@@ -46,7 +46,7 @@ class RabbitMQClient():
             body=body)
         logging.debug("RabbitMQ %s published message to exchange %s!" % ('consumer' if self.is_consumer else 'producer', self.exchange))
 
-    def subscribe(self, window_width=None, frequency=None, data_format=None):
+    def subscribe(self, window_width=None, frequency=None, data_format=None, topic=None):
         self.channel.basic_consume(
             queue=self.queue_name,
             on_message_callback=self.__callback,
@@ -55,6 +55,7 @@ class RabbitMQClient():
         self.window_width = window_width
         self.frequency = frequency
         self.data_format = data_format
+        self.topic=topic
     
     def consume(self):
         self.channel.start_consuming()
@@ -66,6 +67,8 @@ class RabbitMQClient():
 
     def influx2df(self, body):
         body = [parse_line(b) for b in body.decode('utf-8').strip().split('\n')]
+        if not self.topic is None:
+            body = [b for b in body if b['tags']['topic'] == self.topic]
         body = pd.DataFrame(body)
         body['time'] = pd.to_datetime(body['time'], utc=True)
         body['value'] = body['fields'].apply(lambda x: x[self.key])
@@ -85,7 +88,7 @@ class RabbitMQClient():
         if not body == '':
             self.body = body
             if self.data_format == 'influx':
-                self.body = self.influx2df(body)
+                self.body = self.influx2df(self.body)
             if not self.window_width is None or not self.frequency is None:
                 if self.buffer is None:
                     self.buffer = self.body
