@@ -80,7 +80,7 @@ services:
 
   chronograf:
     image: chronograf:alpine
-    networks: 
+    networks:
       - ml_net
     ports:
       - 8888:8888
@@ -88,19 +88,28 @@ services:
       - ./docker-volumes/chronograf:/var/lib/chronograf
     depends_on:
       - influxdb
-      
+
   preprocessor:
-    build: 
+    build:
       dockerfile: ./components/preprocessor/Dockerfile
       context: ./
     networks:
       - ml_net
     depends_on:
       - influxdb
-  
+
   modelserver:
     build:
       dockerfile: ./components/modelserver/Dockerfile
+      context: ./
+    networks:
+      - ml_net
+    depends_on:
+      - influxdb
+
+  offline_segmentation:
+    build:
+      dockerfile: ./components/offline_segmentation/Dockerfile
       context: ./
     networks:
       - ml_net

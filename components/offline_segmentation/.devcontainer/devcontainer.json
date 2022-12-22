@@ -1,0 +1,26 @@
+{
+    "name": "offline_segmentation",
+    "dockerComposeFile": ["../../../compose.yaml", "compose-override.yaml"],
+    "service": "offline_segmentation",
+    "runServices": ["offline_segmentation"],
+    "shutdownAction": "none",
+    "extensions": ["ms-python.python", "ms-python.vscode-pylance"],
+    // "containerUser": "root",
+    // "remoteUser": "root",
+    "mounts": [
+      {
+        "type":"bind",
+        "source": "${localWorkspaceFolder}",
+        "target":"/workspace"
+      },
+      {
+        "type":"volume",
+        "source": "offline_segmentation_dev_lib",
+        "target":"/.venv"
+      }],
+    "remoteEnv": {"PATH": "/.venv/bin:${containerEnv:PATH}", "PYTHONPATH": "${containerWorkspaceFolder}/app"},
+    "workspaceFolder": "/workspace",
+    "overrideCommand": true,
+    "initializeCommand": "docker compose rm offline_segmentation --stop --force",
+    "onCreateCommand": "pipenv install --dev && pipenv clean"
+  }

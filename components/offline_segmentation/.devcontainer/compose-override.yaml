@@ -1,0 +1,5 @@
+services:
+  offline_segmentation:
+    image: dev/offline_segmentation
+    build:
+      target: dev
