@@ -8,3 +8,6 @@ __pycache__
 !.vscode/*.code-snippets
 .env
 docker-volumes/
+
+cnc/fähigkeitsindikatoren_main/data/
+cnc/CSV_SDMflex/
