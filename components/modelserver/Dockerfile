@@ -15,7 +15,8 @@ FROM dev AS build
 COPY components/modelserver/Pipfile* /workspace/
 
 WORKDIR /workspace
-RUN pipenv install --deploy --ignore-pipfile
+# RUN pipenv install --deploy --ignore-pipfile
+RUN pipenv sync
 
 
 FROM base AS release
