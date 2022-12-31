@@ -18,6 +18,7 @@ WORKDIR /workspace
 RUN pipenv install --deploy --ignore-pipfile
 
 
+
 FROM base AS release
 
 RUN useradd -s /bin/bash appuser

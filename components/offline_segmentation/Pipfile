@@ -8,6 +8,10 @@ influxdb-client = {extras = ["ciso"], version = "*"}
 update = "*"
 pandas = "*"
 requests = "*"
+numpy = "*"
+torch = "*"
+scipy = "*"
+scikit-learn ="*"
 
 [dev-packages]
 autopep8 = "*"

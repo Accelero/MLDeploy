@@ -4,6 +4,7 @@ from config import config
 import pandas as pd
 import time
 import threading
+import logging
 
 url = config.influxdb_url
 username = config.influxdb_username
@@ -42,7 +43,7 @@ def preprocess(input: pd.DataFrame):
                 df.drop(df.columns.difference(['_value']), axis=1, inplace=True)
                 time_stamp = df.index[-1]
                 feature = df.to_csv(columns=['_value'], header=False, index=False)
-                
+
                 return time_stamp, feature
 
 
@@ -72,7 +73,7 @@ def run():
         except:
             pass
         time.sleep(pd.to_timedelta(config.window_step).total_seconds())
-        
+
 
 preprocess_thread = threading.Thread(target=run)
 
@@ -83,6 +84,8 @@ def stop():
     stopEvent.set()
 
 if __name__=='__main__':
+    print('main preprozess')
+    logging.info('main preprozess')
     df = query_api.query_data_frame(query)
     resample(df)
     # print(a, b, len(b), sep='\n')

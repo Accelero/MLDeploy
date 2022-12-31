@@ -39,14 +39,15 @@ class Sensor():
         mqtt_client.on_connect_fail = on_connect_fail
         try:
             mqtt_client.connect(host=mqtt_broker_ip, port=mqtt_broker_port)
-        except: pass
+        except:
+            pass
         mqtt_client.loop_start()
 
-        # Setup sample and send loops. 
-        # Asyncio loop runs sample and loop task until they're complete. 
-        # The loops only complete, when the stop_event is set. 
-        # Asyncio.gather is used to start the sleep at the same time as the coroutine, 
-        # other than runnning the coroutine and then sleep afterwards. 
+        # Setup sample and send loops.
+        # Asyncio loop runs sample and loop task until they're complete.
+        # The loops only complete, when the stop_event is set.
+        # Asyncio.gather is used to start the sleep at the same time as the coroutine,
+        # other than runnning the coroutine and then sleep afterwards.
         output = []
 
         async def sample_loop():
@@ -78,8 +79,8 @@ class Sensor():
         self.stop_event.clear()
         self.process.start()
 
-    # Currently the stop function blocks until the send and sample loops have finished 
-    # the last iteration of the loop. A non-blocking implementation would be better. 
+    # Currently the stop function blocks until the send and sample loops have finished
+    # the last iteration of the loop. A non-blocking implementation would be better.
     def stop(self):
         self.stop_event.set()
         # logging.info("Sensor %s: stopped" % (self.name))
