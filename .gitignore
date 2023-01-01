@@ -12,6 +12,8 @@ docker-volumes/
 cnc/fähigkeitsindikatoren_main/data/
 cnc/CSV_SDMflex/
 components/offline_segmentation_alt/
+components/offline_segmentation_pipenv/
+
 components/offline_segmentation/app/CSV_SDMflex/
 components/offline_segmentation/app/data/
 data/
