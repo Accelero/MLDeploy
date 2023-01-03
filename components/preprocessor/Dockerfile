@@ -15,7 +15,8 @@ FROM dev AS build
 COPY components/preprocessor/Pipfile* /workspace/
 
 WORKDIR /workspace
-RUN pipenv install --deploy --ignore-pipfile
+# RUN pipenv install --deploy --ignore-pipfile
+RUN pipenv sync
 
 
 FROM base AS release

@@ -14,6 +14,8 @@ class CustomConfig():
         self.path = path
         self.parser = configparser.ConfigParser()
         self.read(path)
+        self.influxdb_database = self.parser.get('Influxdb', 'database')
+
         self.update()
 
     def read(self, path):
@@ -29,6 +31,8 @@ class CustomConfig():
         self.influxdb_url = self.parser.get('Influxdb', 'url')
         self.influxdb_username = self.parser.get('Influxdb', 'username')
         self.influxdb_password = self.parser.get('Influxdb', 'password')
+        self.influxdb_database = self.parser.get('Influxdb', 'database')
+
 
     def save(self):
         with open(self.path, 'w') as configfile:

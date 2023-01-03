@@ -17,7 +17,7 @@ myQuery = f'from(bucket: "mydb")\
 # |> filter(fn: (r) => r._measurement == "sim_sensor")\
 # |> filter(fn: (r) => r["_field"] == "value")'
 
-def create_Database():
+def create_Database(name):
     print('create_Database')
     r = requests.models.Response()
     url = 'http://localhost:8086/query'
@@ -25,7 +25,7 @@ def create_Database():
 
     while r.status_code != 200:
         try:
-            params = {'q':'CREATE DATABASE mydb2'}
+            params = {'q':f'CREATE DATABASE {name}'}
             r = requests.post(url=url, params=params)
         except:
             raise ValueError(f'Unexpectetd Value from InfluxDB {r.status_code}')

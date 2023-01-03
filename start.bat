@@ -13,6 +13,6 @@ if not exist ".\docker-volumes\mosquitto\config\mosquitto.conf" xcopy ".\externa
 echo "bind mount files set up"
 
 @REM build and start containers
-@REM docker compose up -d --build
+docker compose up -d --build
 
-docker compose up
+@REM docker compose up

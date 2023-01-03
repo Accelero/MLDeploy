@@ -82,6 +82,8 @@ def start_learning():
         'class_index_models' : class_index_models,
 
     }
+    data = pd.DataFrame.from_dict(ret_dict)
+    print(data)
     print ('finished learning_phase')
 
-    return ret_dict
+    return data

@@ -22,5 +22,5 @@
     "workspaceFolder": "/workspace",
     "overrideCommand": true,
     "initializeCommand": "docker compose rm modelserver --stop --force",
-    "onCreateCommand": "pipenv install --dev && pipenv clean"
+    "onCreateCommand": "pipenv sync --dev && pipenv clean"
   }

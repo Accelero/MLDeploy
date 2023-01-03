@@ -17,3 +17,4 @@ components/offline_segmentation_pipenv/
 components/offline_segmentation/app/CSV_SDMflex/
 components/offline_segmentation/app/data/
 data/
+components/offline_segmentation/command_to_copy_output.txt
