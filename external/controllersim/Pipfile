@@ -7,6 +7,8 @@ name = "pypi"
 paho-mqtt = "*"
 keyboard = "*"
 
+csv-mqtt = "*"
+
 [dev-packages]
 autopep8 = "*"
 

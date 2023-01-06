@@ -46,7 +46,7 @@ def startup():
             sample_interval = config.getfloat(section, 'sample_interval')
             send_interval = config.getfloat(section, 'send_interval')
             mqtt_topic = config.get(section, 'mqtt_topic')
-            sensors.append(generators.Sensor(name, sample_interval, send_interval, mqtt_topic))
+            sensors.append(generators.CNC(name, sample_interval, send_interval, mqtt_topic))
 
     for sensor in sensors:
         sensor.start()

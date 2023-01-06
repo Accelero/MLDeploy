@@ -7,7 +7,7 @@ from libary_cnc import cluster_representatives
 import pickle
 import pandas as pd
 
-def start_learning():
+def start_training():
 
     #############
     # load initial data and calculate sequences
@@ -75,15 +75,24 @@ def start_learning():
     # with open('data/class_index_models.pkl', 'wb') as f:
     #     pickle.dump(class_index_models, f)
 
-    ret_dict = {
-        'class_features' : class_features,
-        'class_std' : class_std,
-        'index_matrix' : index_matrix,
-        'class_index_models' : class_index_models,
+    # ret_dict = {
+    #     'class_features' : class_features,
+    #     'class_std' : class_std,
+    #     'index_matrix' : index_matrix,
+    #     'class_index_models' : class_index_models,
 
+    # }
+    # data = pd.DataFrame.from_dict(ret_dict)
+    # print(data)
+    ret_dict = {
+    'class_features0' : class_features[0],
+    'class_features1' : class_features[1],
+    'class_std0' : class_std[0],
+    'class_std1' : class_std[1]
     }
+
     data = pd.DataFrame.from_dict(ret_dict)
     print(data)
-    print ('finished learning_phase')
+    print ('finished training_phase')
 
     return data

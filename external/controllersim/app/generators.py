@@ -1,4 +1,4 @@
-import samplers
+#import samplers
 import multiprocessing as mp
 import paho.mqtt.client as mqtt
 from config import config
@@ -7,6 +7,7 @@ import json
 import time
 import signal
 import logging
+import pandas as pd
 
 
 mqtt_broker_ip = config.get('MQTT', 'broker_ip')
@@ -16,7 +17,7 @@ mqtt_broker_port = config.getint('MQTT', 'broker_port', fallback=1883)
 class Sensor():
     def __init__(self, name, sample_interval, send_interval, mqtt_topic):
         self.name = name
-        self.sampler = samplers.SineSampler(freq=1, noise=0.2)
+        #self.sampler = samplers.SineSampler(freq=1, noise=0.2)
         self.process = mp.Process(target=self._run, name=self.name)
         self.stop_event = mp.Event()
         self.sample_interval = sample_interval
@@ -74,6 +75,125 @@ class Sensor():
         loop.run_until_complete(asyncio.gather(sample_loop(), send_loop()))
         mqtt_client.loop_stop()
         logging.info("Sensor %s: stopped" % (self.name))
+
+    def start(self):
+        self.stop_event.clear()
+        self.process.start()
+
+    # Currently the stop function blocks until the send and sample loops have finished
+    # the last iteration of the loop. A non-blocking implementation would be better.
+    def stop(self):
+        self.stop_event.set()
+        # logging.info("Sensor %s: stopped" % (self.name))
+
+class CNC():
+    def __init__(self, name, sample_interval, send_interval, mqtt_topic):
+        print("init")
+        self.name = name
+        #self.sampler = samplers.SineSampler(freq=1, noise=0.2)
+        self.process = mp.Process(target=self._run, name=self.name)
+        self.stop_event = mp.Event()
+        self.sample_interval = sample_interval
+        self.send_interval = send_interval
+        self.mqtt_topic = mqtt_topic
+        self.csvdatei = pd.read_csv("./CSV_SDMflex/SDMflex_V2_Anwendung_final.csv",sep=";",decimal=",")
+        # with open('./CSV_SDMflex/SDMflex_V2_Anwendung_final.csv') as self.csvdatei:
+        #     self.csv_reader_object = csv.reader(self.csvdatei, delimiter=',')
+
+        logging.info("CNC %s: spawned" % self.name)
+
+    def _run(self):
+        # Ignore SIGINT/keyboard interrupt on the subprocess
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+        # Setup MQTT Client
+        mqtt_client = mqtt.Client(protocol=mqtt.MQTTv5)
+        def on_connect_fail(client, userdata):
+            logging.warn('CNC %s: MQTT Connection failed' % self.name)
+        def on_connect(client, userdata, flags, reasonCode, properties):
+            if reasonCode == 0:
+                logging.info('CNC %s: MQTT connected' % self.name)
+        mqtt_client.on_connect = on_connect
+        mqtt_client.on_connect_fail = on_connect_fail
+        try:
+            mqtt_client.connect(host=mqtt_broker_ip, port=mqtt_broker_port)
+        except:
+            pass
+        mqtt_client.loop_start()
+
+        # Setup sample and send loops.
+        # Asyncio loop runs sample and loop task until they're complete.
+        # The loops only complete, when the stop_event is set.
+        # Asyncio.gather is used to start the sleep at the same time as the coroutine,
+        # other than runnning the coroutine and then sleep afterwards.
+
+        output = []
+
+        value_sample = self.csvdatei.values.tolist()
+        async def sample_loop():
+            async def sample_coro():
+                time_stamp = time.time()
+                x = value_sample[:1]
+                for i in x:
+                    #print(i)
+                    sample = i[0].split(',')
+                    sample = {'time': time_stamp, 'Pos_X': float(sample[0]), 'Pos_Y': float(sample[1]), 'Pos_Z': float(sample[2]), 'Speed_SP': float(sample[3]), 'Cur_X': float(sample[4]), 'Cur_Y': float(sample[5]), 'Cur_Z': float(sample[6]), 'Cur_SP': float(sample[7])}
+                    #print(sample)
+                    output.append(sample)
+                return
+            while not self.stop_event.is_set():
+                await asyncio.gather(asyncio.sleep(self.sample_interval), sample_coro())
+
+        async def send_loop():
+            async def send_coro():
+                time_stamp = time.time()
+                x = value_sample[:1]
+                for i in x:
+                    #print(i)
+                    sample = i[0].split(',')
+                    sample = {'time': time_stamp, 'Pos_X': float(sample[0]), 'Pos_Y': float(sample[1]), 'Pos_Z': float(sample[2]), 'Speed_SP': float(sample[3]), 'Cur_X': float(sample[4]), 'Cur_Y': float(sample[5]), 'Cur_Z': float(sample[6]), 'Cur_SP': float(sample[7])}
+                    #print(sample)
+                    output.append(sample)
+                payload = json.dumps(output)
+                output.clear()
+                #print(output)
+                print(payload)
+                mqtt_client.publish(topic=self.mqtt_topic, payload=payload)
+                return
+            while not self.stop_event.is_set():
+                await asyncio.gather(asyncio.sleep(self.send_interval), send_coro())
+
+        #value_sample = self.csvdatei.values.tolist()
+        def send_data():
+            print('send_data')
+            #values = self.csvdatei.iloc[[self.i]]
+            #print(type(value_sample))
+            #print(value_sample[0])
+            #sample_value = self.sampler.sample(time_stamp)
+            x = value_sample[:100]
+            print(len(x))
+            for i in x:# range(0, 10):# len(value_sample)):
+                #print(i)
+                time_stamp = time.time()
+                sample = i[0].split(',')
+                sample = {'time': 5, 'Pos_X': float(sample[0]), 'Pos_Y': float(sample[1]), 'Pos_Z': float(sample[2]), 'Speed_SP': float(sample[3]), 'Cur_X': float(sample[4]), 'Cur_Y': float(sample[5]), 'Cur_Z': float(sample[6]), 'Cur_SP': float(sample[7])}
+                #print(sample)
+                #output.append(sample)
+                payload = json.dumps(sample)
+                output.clear()
+                #print(output)
+                print(payload)
+                mqtt_client.publish(topic=self.mqtt_topic, payload=payload)
+                #time.sleep(0.05)
+            #mqtt_client.publish(topic=self.mqtt_topic, payload=self.csvdatei)
+        # loop = asyncio.new_event_loop()
+        # asyncio.set_event_loop(loop)
+        # #loop.run_until_complete(asyncio.gather(sample_loop(), send_loop()))
+        # sample_loop()
+        # loop.run_until_complete(asyncio.gather(send_loop()))
+        # mqtt_client.loop_stop()
+        # logging.info("CNC %s: stopped" % (self.name))
+        send_data()
 
     def start(self):
         self.stop_event.clear()

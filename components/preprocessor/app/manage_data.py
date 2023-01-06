@@ -11,48 +11,53 @@ class ManageData():
         self.password = config.influxdb_password
         self.token = f'{self.username}:{self.password}'
 
-        self.database = config.influxdb_database
+        self.database_read = config.influxdb_database_read
+        self.database_write = config.influxdb_database_write
+
         self.retention_policy = 'autogen'
-        self.bucket = f'{self.database}'#/{self.retention_policy}'
+        self.bucket = f'{self.database_read}/{self.retention_policy}'
 
         self.client = InfluxDBClient(url=self.url, token=self.token)
         self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
         self.query_api = self.client.query_api()
 
         # self.query = f'from(bucket: "{self.bucket}")\
-        # |> range(start: -1d)\
+        # |> range(start:-5)\
         # |> filter(fn: (r) => r._measurement == "FeaturesTraining")'
         # # \
-        # # |> filter(fn: (r) => r["_field"] == "feature")'
+        # # |> filter(fn: (r) => r["_field"] == "class_features0")'
 
+        #self.create_database()
         self.query = f'from(bucket: "{self.bucket}")\
-        |> range(start:-5)\
-        |> filter(fn: (r) => r._measurement == "FeaturesTraining")'
+        |> range(start: -10)\
+        |> filter(fn: (r) => r["_measurement"] == "mqtt_consumer")'
         # \
-        # |> filter(fn: (r) => r["_field"] == "class_features0")'
+        # |> filter(fn: (r) => r._field == "Cur_X")'
 
-        self.create_database()
 
 
 
     def create_database(self):
         print('ManageData create')
 
-        print(f'create_Database {self.database}')
+        print(f'create_Database {self.database_read} and {self.database_write}')
         request = requests.models.Response()
         #url_request = self.url+'/query'
         url_request = 'http://influxdb:8086/query'
 
         while request.status_code != 200:
             try:
-                params = {'q':f'CREATE DATABASE {self.database}'}
+                params = {'q':f'CREATE DATABASE {self.database_read}'}
+                request = requests.post(url=url_request, params=params)
+                params = {'q':f'CREATE DATABASE {self.database_write}'}
                 request = requests.post(url=url_request, params=params)
             except:
                 raise ValueError(f'Unexpectetd Value from InfluxDB {request.status_code}')
 
     def write_to_database(self, data):
+        print('write to database')
 
-        self.write_api.write(self.bucket,'wbk', record= data, data_frame_measurement_name = 'FeaturesTraining')
+        self.write_api.write(self.database_write,'wbk', record= data, data_frame_measurement_name = 'FeaturesInline')
 
         # self.write_api.write(self.bucket,'wbk', record={
         #     'measurement':'features',
@@ -67,5 +72,7 @@ class ManageData():
         df = self.query_api.query_data_frame(self.query)
         #df = self.query_api.query(query=self.query)
 
-        print(df)
-        print(type(df))
+        # print(df)
+        # print(df[0])
+        # print(type(df))
+        return df

@@ -15,7 +15,7 @@ def rep_features(lables, features):
     class_std = []
 
     for class_nr in class_nrs:
-       
+
         # Calculate class features
         class_index = np.where(lables == class_nr)[0].tolist()
         raw_class_feature = features[class_index]
@@ -23,7 +23,7 @@ def rep_features(lables, features):
         # Calculate the mean Features
         class_features += [raw_class_feature.mean(axis=0).tolist()]
 
-        # Calculate the std for teh features of an class
+        # Calculate the std for the features of an class
         class_std += [raw_class_feature.std(axis=0).tolist()]
 
     return class_features, class_std
@@ -54,7 +54,7 @@ def get_cluster_ts(data, lables):
         class_len = [ len(raw_ts[index]) for index in class_index]
         class_len_data = [min(class_len), max(class_len)]
         class_len_rep += [class_len_data[0]]
-    
+
         # Get the represnetative ts and add them to the class_rep list
         rep_ts = []
         for i in range(count_ts):
@@ -108,14 +108,14 @@ def reference_series(Data):
 
     # Calculate median and upper/lower threshold for a given neighborhood of all reference series
     for i in range(len(Data[0])-len1):
-        
+
         neighborhood = np.array([Data[ii][i:i+len1] for ii in range(len(Data))])
         median_n = np.median(neighborhood)
 
         # calculate the percentiles
         p_80 = np.percentile(neighborhood, 80)
         p_20 = np.percentile(neighborhood, 20)
-        
+
         std_n = np.std(neighborhood)
         median += [median_n]
         min_ += [median_n-std_n*std_factor/(1+abs(p_80-p_20))**2]
@@ -141,7 +141,7 @@ class Autoencoder(nn.Module):
         super().__init__()
 
         self.encoder = nn.Sequential(
-            nn.Linear(class_len_rep, 128), 
+            nn.Linear(class_len_rep, 128),
             nn.ReLU(),
             nn.Linear(128, 32),
             nn.ReLU(),
@@ -165,7 +165,7 @@ class Autoencoder(nn.Module):
 
 class signal_index():
     # signal index class containing all representative informations if a signal
-    
+
     def __init__(self, rep_data, class_len_rep):
         self.CLASS_LEN_REP = class_len_rep
         self.MEDIAN, self.MAX_, self.MIN_ = reference_series(rep_data)
@@ -193,10 +193,10 @@ class signal_index():
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
-            
+
             # print(f'Epoch:{epoch+1}, Loss:{loss.item(): .4f}')
             # outputs.append((epoch, input, recon))
-        
+
         return model
 
     def get_index(self, data, type = 'mean'):
@@ -205,11 +205,11 @@ class signal_index():
         if type == 'rec_error':
             # reconsturction error as index
             error = torch.tensor(pd.Series(data), dtype=torch.float32)
-            index = sum(self.MODEL.forward(error)-error).item()/self.CLASS_LEN_REP   
-    
+            index = sum(self.MODEL.forward(error)-error).item()/self.CLASS_LEN_REP
+
         if type == 'dist_to_mean':
             # distance as index
-            index =  sum([abs(data[ii]-self.MEDIAN[ii])/self.CLASS_LEN_REP for ii in range(len(data))])   
+            index =  sum([abs(data[ii]-self.MEDIAN[ii])/self.CLASS_LEN_REP for ii in range(len(data))])
         if type == 'mean':
             # distance between abs of global mean is index
             index = self.GLOBAL_MEAN - sum(np.absolute(data))/len(data)
@@ -242,7 +242,7 @@ def get_cluster_ts(data, lables):
         class_len = [ len(raw_ts[index]) for index in class_index]
         class_len_data = [min(class_len), max(class_len)]
         class_len_rep += [class_len_data[0]]
-    
+
         # Get the represnetative ts and add them to the class_rep list
         rep_ts = []
         for i in range(count_ts):
@@ -287,4 +287,4 @@ def get_cluster_ts_inline(data, lables):
 
     return class_rep, class_len_rep, class_nrs
 
-    
+

@@ -1,4 +1,4 @@
-import training_phase
+#import inline_phase
 import time
 from manage_data import ManageData
 
@@ -7,10 +7,11 @@ from manage_data import ManageData
 if __name__ == '__main__':
     manager = ManageData()
     time.sleep(5)
-    training_data = training_phase.start_training()
-    print(training_data)
-    manager.write_to_database(data=training_data)
-    manager.read_from_database()
+    #training_data = training_phase.start_training()
+    #print(training_data)
+    #manager.write_to_database(data=training_data)
+    x = manager.read_from_database()
+    print(x)
 
     #damit der Container zum debuggen online bleibt
     time.sleep(100)

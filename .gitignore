@@ -20,3 +20,8 @@ data/
 components/offline_segmentation/command_to_copy_output.txt
 components/preprocessor_alt
 components/preprocessor/app/CSV_SDMflex/
+external/controllersim/app/CSV_SDMflex
+
+
+components/modelserver_alt
+external/controllersim_alt
