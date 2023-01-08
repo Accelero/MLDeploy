@@ -75,4 +75,7 @@ class ManageData():
         # print(df)
         # print(df[0])
         # print(type(df))
-        return df
+        df_strip=[]
+        for i in df:
+            df_strip.append(i.drop(columns=['result','_start','_stop','host','topic']))
+        return df_strip
