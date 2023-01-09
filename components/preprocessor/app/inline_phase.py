@@ -8,23 +8,25 @@ from libary_cnc import cluster_representatives
 import pickle
 import pandas as pd
 
-def start_inline_phase(data_frame):
+def start_inline_phase(kopfzeile, matrix):
+    #static_features noch nicht implementiert!!!
+    static_features = np.empty([0,0])
     # load Data
-    with open('data/class_features.pkl', 'rb') as class_features_file:
-        class_features = pickle.load(class_features_file)
+    # with open('./data/class_features.pkl', 'rb') as class_features_file:
+    #     class_features = pickle.load(class_features_file)
 
-    with open('data/class_std.pkl', 'rb') as class_std_file_file:
-        class_std = pickle.load(class_std_file_file)
+    # with open('./data/class_std.pkl', 'rb') as class_std_file_file:
+    #     class_std = pickle.load(class_std_file_file)
 
-    with open('data/class_index_models.pkl', 'rb') as class_index_models_file:
-        class_index_models = pickle.load(class_index_models_file)
+    # with open('./data/class_index_models.pkl', 'rb') as class_index_models_file:
+    #     class_index_models = pickle.load(class_index_models_file)
 
-    with open('data/index_matrix.pkl', 'rb') as index_matrix_file:
-        index_matrix = pickle.load(index_matrix_file)
+    # with open('./data/index_matrix.pkl', 'rb') as index_matrix_file:
+    #     index_matrix = pickle.load(index_matrix_file)
 
     #############
     # load initial data and calculate sequences
-    matrix,static_features,kopfzeile=load_data.load_matrix(r"./CSV_SDMflex/SDMflex_V2_Anwendung_final.csv")   # load learning Data
+    #matrix,static_features,kopfzeile=load_data.load_matrix(r"./CSV_SDMflex/SDMflex_V2_Anwendung_final.csv")   # load learning Data
     Schnitt = Zuschneiden.Sectioning(matrix,kopfzeile,G=1, c=True)   # calculate sequences
     Zuschnitte = Features.region_feature(matrix,Schnitt,kopfzeile,static_features)   # calculate features
 

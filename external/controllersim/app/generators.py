@@ -89,6 +89,7 @@ class Sensor():
 class CNC():
     def __init__(self, name, sample_interval, send_interval, mqtt_topic):
         print("init")
+        self.f_sample = 500
         self.name = name
         #self.sampler = samplers.SineSampler(freq=1, noise=0.2)
         self.process = mp.Process(target=self._run, name=self.name)
@@ -170,20 +171,29 @@ class CNC():
             #print(type(value_sample))
             #print(value_sample[0])
             #sample_value = self.sampler.sample(time_stamp)
+
+            # value_sample ist die eingelesene csv datei mit x Messungen und
+            # jede Messung hat 7 Messwerte als Liste
             x = value_sample[:100]
-            print(len(x))
-            for i in x:# range(0, 10):# len(value_sample)):
-                #print(i)
-                time_stamp = time.time()
+            #print(x)
+            #print(len(x))
+            l = 0
+            for i in x:
+                #print(l)
+                #time_stamp = time.time()
+
+                time_stamp = (l*1/self.f_sample)
+                #print(time_stamp)
                 sample = i[0].split(',')
-                sample = {'time': 5, 'Pos_X': float(sample[0]), 'Pos_Y': float(sample[1]), 'Pos_Z': float(sample[2]), 'Speed_SP': float(sample[3]), 'Cur_X': float(sample[4]), 'Cur_Y': float(sample[5]), 'Cur_Z': float(sample[6]), 'Cur_SP': float(sample[7])}
+                sample = {'time': time_stamp, 'Pos_X': float(sample[0]), 'Pos_Y': float(sample[1]), 'Pos_Z': float(sample[2]), 'Speed_SP': float(sample[3]), 'Cur_X': float(sample[4]), 'Cur_Y': float(sample[5]), 'Cur_Z': float(sample[6]), 'Cur_SP': float(sample[7])}
                 #print(sample)
                 #output.append(sample)
                 payload = json.dumps(sample)
                 output.clear()
                 #print(output)
-                print(payload)
+                #print(payload)
                 mqtt_client.publish(topic=self.mqtt_topic, payload=payload)
+                l += 1
                 #time.sleep(0.05)
             #mqtt_client.publish(topic=self.mqtt_topic, payload=self.csvdatei)
         # loop = asyncio.new_event_loop()

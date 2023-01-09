@@ -6,9 +6,11 @@ def Sectioning(matrix,kopfzeile,G=2.5,c = False): # in dieser Funktion werden di
     # c definiert den Ausschneidemodus: False --> nur anhand Spindelstrom, True --> zusätzlich bei der ersten Änderung eines Positionssignals
 
     Schnitt = []   #In der Variable Schnitt werden alle Schnitte gespeichert
+    print(type(matrix))
+    print(type(kopfzeile))
 
     # Ausschneiden anhand des Spindelstroms
-    Pos = kopfzeile.index('Cur_SP')   
+    Pos = kopfzeile.index('Cur_SP')
     Spindel = abs(matrix[range(0,len(matrix[:,Pos])),Pos])  # Spindelstrom als Kriterium
     b, a = signal.butter(3, 0.005)                          # Filterung zur Glättung
     zi = signal.lfilter_zi(b, a)
@@ -20,6 +22,7 @@ def Sectioning(matrix,kopfzeile,G=2.5,c = False): # in dieser Funktion werden di
             k = int(i)
             Schnitt = np.append(Schnitt,k)
             counter = 50
+    print(Schnitt)
     if z[int(Schnitt[0])+10]<G:                             #Sicherstellen das wir in einem Einschaltbereich sind
          np.delete(Schnitt,0)
 
@@ -39,9 +42,9 @@ def Sectioning(matrix,kopfzeile,G=2.5,c = False): # in dieser Funktion werden di
 
             # Suche nach dem Start des Abschnitts (Erste Änderung einer konstanten Achse)
             for j in range(Bereichweite):
-        
+
                 Stelle = Bereich[i][0]-j
-                  
+
                 if Stelle <= 0:
                     break
                 if (diffx[Bereich[i][0]] <= sw and diffx[Stelle] > sw) or (diffy[Bereich[i][0]] <= sw and diffy[Stelle] > sw) or (diffz[Bereich[i][0]] <= sw and diffz[Stelle] > sw):
