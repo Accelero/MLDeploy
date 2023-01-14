@@ -27,6 +27,12 @@ volumes:
       type: none
       o: bind
       device: /c/docker-volumes/mldeploy/chronograf
+  grafana:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /c/docker-volumes/mldeploy/grafana
   mosquitto_config:
     driver: local
     driver_opts:
@@ -122,6 +128,17 @@ services:
     depends_on:
       - influxdb
       
+  grafana:
+    build: grafana
+    networks: 
+      - ml_net
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana:/var/lib/grafana
+    depends_on:
+      - influxdb
+
   preprocessor:
     build: preprocessor
     networks:

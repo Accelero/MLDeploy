@@ -10,23 +10,29 @@ import numpy as np
 import pandas as pd
 import json
 import time
+import pika
 
 window_width = config.parser.get('General', 'window_width')
 frequency = config.parser.get('General', 'frequency')
 
-window_width = pd.to_timedelta(window_width).total_seconds()
-frequency = pd.to_timedelta(frequency).total_seconds()
+window_width = pd.to_timedelta(window_width)
+frequency = pd.to_timedelta(frequency)
 
 # RabbitMQ subscriber
 rabbitmq_broker_ip = config.parser.get('RabbitMQ', 'broker_ip')
 rabbitmq_broker_port = config.parser.get('RabbitMQ', 'broker_port')
+rabbitmq_backup_size = config.parser.get('RabbitMQ', 'backup_size')
+rabbitmq_backup_size = float(rabbitmq_backup_size)
+
 rabbitmq_consumer_exchange = config.parser.get('RabbitMQ', 'consumer_exchange')
-rabbitmq_consumer = RabbitMQClient(rabbitmq_broker_ip, rabbitmq_broker_port)
+rabbitmq_consumer = RabbitMQClient(rabbitmq_broker_ip, rabbitmq_broker_port, rabbitmq_backup_size)
 
 rabbitmq_producer_exchange = config.parser.get('RabbitMQ', 'producer_exchange')
-rabbitmq_producer = RabbitMQClient(rabbitmq_broker_ip, rabbitmq_broker_port)
+rabbitmq_producer = RabbitMQClient(rabbitmq_broker_ip, rabbitmq_broker_port, rabbitmq_backup_size)
 
+# Influxdb
 url = config.parser.get('Influxdb', 'url')
+database = config.parser.get('Influxdb', 'database')
 username = config.parser.get('Influxdb', 'username')
 password = config.parser.get('Influxdb', 'password')
 token = f'{username}:{password}'
@@ -37,31 +43,34 @@ write_api = client.write_api(write_options=SYNCHRONOUS)
 stopEvent = threading.Event()
 
 def rabbitmq_consumer_run():
-    # consume
-    logging.info('RabbitMQ cosumer connection starts...')
-    start = datetime.now()
-    rabbitmq_consumer.connect('modelserver_consumer', is_consumer=True)
-    rabbitmq_consumer.setup(rabbitmq_consumer_exchange)
-    rabbitmq_consumer.subscribe()
-    end = datetime.now()
-    logging.info('RabbitMQ consumer connection takes %ss' % (end - start).total_seconds())
-    rabbitmq_consumer.consume()
+    def _rabbitmq_consumer_run_core():
+        # consume
+        logging.info('RabbitMQ cosumer connection starts...')
+        start = datetime.now()
+        rabbitmq_consumer.connect('modelserver_consumer', is_consumer=True)
+        rabbitmq_consumer.setup(rabbitmq_consumer_exchange)
+        rabbitmq_consumer.subscribe()
+        end = datetime.now()
+        logging.info('RabbitMQ consumer connection takes %ss' % (end - start).total_seconds())
+        rabbitmq_consumer.consume()
+    _rabbitmq_consumer_run_core()
 
 def rabbitmq_producer_run():
-    # produce
-    logging.info('RabbitMQ producer connection starts...')
-    start = datetime.now()
-    rabbitmq_producer.connect('modelserver_producer', is_consumer=False)
-    rabbitmq_producer.setup(rabbitmq_producer_exchange)
-    end = datetime.now()
-    logging.info('RabbitMQ producer connection takes %ss' % (end - start).total_seconds())
-
+    def _rabbitmq_producer_run_core():
+        # produce
+        logging.info('RabbitMQ producer connection starts...')
+        start = datetime.now()
+        rabbitmq_producer.connect('modelserver_producer', is_consumer=False)
+        rabbitmq_producer.setup(rabbitmq_producer_exchange)
+        end = datetime.now()
+        logging.info('RabbitMQ producer connection takes %ss' % (end - start).total_seconds())
+    _rabbitmq_producer_run_core()
 
 def parse(input_data):
     dict_data = json.loads(input_data)
     time_stamp = dict_data['time']
     feature = np.fromstring(dict_data['fields']['feature'], sep='\n', dtype=np.float32)
-    feature = np.reshape(feature, (1,int(window_width / frequency)))
+    feature = np.reshape(feature, (1, int(window_width / frequency)))
     return time_stamp, feature
 
 def evalloss():
@@ -79,7 +88,7 @@ def evalloss():
         # rabbitmq_producer.publish(json.dumps(record, default=str))
         # persistent storage
         with write_api as _write_client:
-            _write_client.write('predictions/autogen','wbk', record=record)
+            _write_client.write(f'{database}/autogen','wbk', record=record)
     except RuntimeError as e:
         logging.error('Runtime error: %s' % e)
     except: pass

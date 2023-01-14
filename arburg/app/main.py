@@ -95,7 +95,7 @@ def run_grpc_client(containers):
 def sample_func(time_stamp):
     global buffer
     if len(buffer) == 0:
-        print('gRPC still no value')
+        # print('gRPC still no value')
         return
     sample_value = buffer.pop(0)[0]
     return time_stamp, sample_value

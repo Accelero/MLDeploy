@@ -8,6 +8,7 @@ from datetime import datetime
 import threading
 from rabbitmq_client import RabbitMQClient
 from mylogging import logging
+import pika
 from func_timeout import func_set_timeout
 import func_timeout
 
@@ -19,21 +20,27 @@ window_width = config.parser.get('General', 'window_width')
 window_step = config.parser.get('General', 'window_step')
 frequency = config.parser.get('General', 'frequency')
 
-window_step = pd.to_timedelta(window_step).total_seconds()
+window_width = pd.to_timedelta(window_width)
+window_step = pd.to_timedelta(window_step)
+frequency = pd.to_timedelta(frequency)
 
 # RabbitMQ subscriber
 rabbitmq_broker_ip = config.parser.get('RabbitMQ', 'broker_ip')
 rabbitmq_broker_port = config.parser.get('RabbitMQ', 'broker_port')
+rabbitmq_backup_size = config.parser.get('RabbitMQ', 'backup_size')
+rabbitmq_backup_size = float(rabbitmq_backup_size)
+
 rabbitmq_consumer_exchange = config.parser.get('RabbitMQ', 'consumer_exchange')
 rabbitmq_consumer_data_format = config.parser.get('RabbitMQ', 'consumer_data_format')
 rabbitmq_consumer_topic = config.parser.get('RabbitMQ', 'consumer_topic')
+rabbitmq_consumer = RabbitMQClient(rabbitmq_broker_ip, rabbitmq_broker_port, rabbitmq_backup_size)
 
-rabbitmq_consumer = RabbitMQClient(rabbitmq_broker_ip, rabbitmq_broker_port)
 rabbitmq_producer_exchange = config.parser.get('RabbitMQ', 'producer_exchange')
-rabbitmq_producer = RabbitMQClient(rabbitmq_broker_ip, rabbitmq_broker_port)
+rabbitmq_producer = RabbitMQClient(rabbitmq_broker_ip, rabbitmq_broker_port, rabbitmq_backup_size)
 
 # # Influxdb
 # url = config.parser.get('Influxdb', 'url')
+# database = config.parser.get('Influxdb', 'database')
 # username = config.parser.get('Influxdb', 'username')
 # password = config.parser.get('Influxdb', 'password')
 # token = f'{username}:{password}'
@@ -58,25 +65,31 @@ rabbitmq_producer = RabbitMQClient(rabbitmq_broker_ip, rabbitmq_broker_port)
 stopEvent = threading.Event()
 
 def rabbitmq_consumer_run():
-    # consume
-    logging.info('RabbitMQ cosumer connection starts...')
-    start = datetime.now()
-    rabbitmq_consumer.connect('preprocessor_consumer', is_consumer=True)
-    rabbitmq_consumer.setup(rabbitmq_consumer_exchange)
-    rabbitmq_consumer.subscribe(window_width, frequency, 
-        rabbitmq_consumer_data_format, rabbitmq_consumer_topic)
-    end = datetime.now()
-    logging.info('RabbitMQ consumer connection takes %ss' % (end - start).total_seconds())
-    rabbitmq_consumer.consume()
+    def _rabbitmq_consumer_run_core():
+        # consume
+        logging.info('RabbitMQ cosumer connection starts...')
+        start = datetime.now()
+        rabbitmq_consumer.connect('preprocessor_consumer', is_consumer=True)
+        rabbitmq_consumer.setup(rabbitmq_consumer_exchange)
+        rabbitmq_consumer.subscribe(window_width, frequency, 
+            rabbitmq_consumer_data_format, rabbitmq_consumer_topic)
+        end = datetime.now()
+        logging.info('RabbitMQ consumer connection takes %ss' % (end - start).total_seconds())
+        rabbitmq_consumer.consume()
+    _rabbitmq_consumer_run_core()
+
 
 def rabbitmq_producer_run():
-    # produce
-    logging.info('RabbitMQ producer connection starts...')
-    start = datetime.now()
-    rabbitmq_producer.connect('preprocessor_producer', is_consumer=False)
-    rabbitmq_producer.setup(rabbitmq_producer_exchange)
-    end = datetime.now()
-    logging.info('RabbitMQ producer connection takes %ss' % (end - start).total_seconds())
+    def _rabbitmq_producer_run_core():
+        # produce
+        logging.info('RabbitMQ producer connection starts...')
+        start = datetime.now()
+        rabbitmq_producer.connect('preprocessor_producer', is_consumer=False)
+        rabbitmq_producer.setup(rabbitmq_producer_exchange)
+        end = datetime.now()
+        logging.info('RabbitMQ producer connection takes %ss' % (end - start).total_seconds())
+    _rabbitmq_producer_run_core()
+
 
 def preprocess(input: pd.DataFrame):
             df = input
@@ -95,7 +108,7 @@ def preprocess(input: pd.DataFrame):
                 feature = df.to_csv(columns=['_value'], header=False, index=False)
                 return time_stamp, feature
 
-@func_set_timeout(window_step)
+@func_set_timeout(window_step.total_seconds())
 def event():
     try:
         # get data by rabbitmq consumer
@@ -103,29 +116,29 @@ def event():
             raise RuntimeError('RabbitMQ producer connecting to RabbitMQ broker')
         if not rabbitmq_consumer.connected:
             raise RuntimeError('RabbitMQ consumer connecting to RabbitMQ broker')
-        if not rabbitmq_consumer.buffer_full:
-            raise RuntimeError('RabbitMQ consumer buffer not full, waiting...')
         logging.debug('Getting buffer from RabbitMQ broker...')
         # df = query_api.query_data_frame(query) # influxdb query
-        df = rabbitmq_consumer.get_buffer()
-        time_stamp, feature = preprocess(df)
+        buffer_full, buffer = rabbitmq_consumer.get_buffer()
+        if not buffer_full:
+            # logging.warning('RabbitMQ consumer buffer not full!')
+            raise RuntimeError('RabbitMQ consumer buffer not full, waiting...')
+        time_stamp, feature = preprocess(buffer)
         record = {'measurement':'features', 'fields':{'feature':feature}, 'time': time_stamp}
         # send data by rabbitmq producer
         rabbitmq_producer.publish(json.dumps(record, default=str))
         # # persistent storage
         # with write_api as _write_client:
-        #     _write_client.write('features/autogen','wbk', record=record)
+        #     _write_client.write(f'{}/autogen','wbk', record=record)
     except RuntimeError as e:
         logging.error('Runtime error: %s' % e)
     except: pass
-
 def run():
     while not stopEvent.is_set():
         try:
             event()
         except func_timeout.exceptions.FunctionTimedOut as e: 
             logging.error('Time out error: %s' % e)
-        time.sleep(window_step)
+        time.sleep(window_step.total_seconds())
         # 1 thread: preprocessing in winow step
         # 1 thread: tick
 
@@ -147,8 +160,4 @@ def stop():
     rabbitmq_producer.disconnect()
 
 if __name__=='__main__':
-    '''
-     df = query_api.query_data_frame(query)
-    a, b = preprocess(df)
-    print(a, b, len(b), sep='\n')
-    '''
+    pass

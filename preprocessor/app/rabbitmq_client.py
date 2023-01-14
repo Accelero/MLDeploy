@@ -1,24 +1,26 @@
 import pika
 import time
+from datetime import datetime
 from mylogging import logging
 import pandas as pd
 from line_protocol_parser import parse_line
 
 class RabbitMQClient():
-    def __init__(self, broker_ip, broker_port, key='value'):
+    def __init__(self, broker_ip, broker_port, backup_size, key='value'):
         self.broker_ip = broker_ip
         self.broker_port = broker_port
         self.key = key
         logging.getLogger("pika").propagate = False
-        self.connected = False
         self.body = None
-        self.buffer = None
-        self.buffer_full = False
+        self.backup = None
+        self.backup_size = backup_size
+        self.connected = False
 
     def connect(self, name, is_consumer=False):
         self.is_consumer = is_consumer
         params = pika.ConnectionParameters(self.broker_ip, self.broker_port, client_properties={
-        'connection_name': name})
+        'connection_name': name}, heartbeat=0)
+        self.connected = False
         while not self.connected:
             try:
                 self.connection = pika.BlockingConnection(params) # Connect to broker
@@ -62,7 +64,6 @@ class RabbitMQClient():
 
     def disconnect(self):
         self.connection.close()
-        self.connected = False
         logging.info("RabbitMQ %s disconnected!" % ('consumer' if self.is_consumer else 'producer'))
 
     def influx2df(self, body):
@@ -75,14 +76,13 @@ class RabbitMQClient():
         body = body[['value', 'time']]
         return body
 
-    def concat_buffer(self, body):
-        self.buffer = pd.concat([self.buffer, body], ignore_index=True)
-        self.buffer = self.buffer.sort_values(by='time')
-        self.stop = self.buffer['time'].iloc[-1]
-        self.start = self.stop - pd.to_timedelta(self.window_width)
-        self.buffer = self.buffer.loc[self.buffer['time'] >= self.start]
-        if self.buffer['time'].iloc[0] - self.start <= pd.to_timedelta(self.frequency):
-            self.buffer_full = True
+    def concat_backup(self, body):
+        self.backup = pd.concat([self.backup, body], ignore_index=True)
+        self.backup = self.backup.sort_values(by='time')
+        head = pd.Timestamp.utcnow() - self.backup_size * self.window_width
+        self.backup = self.backup.loc[self.backup['time'] >= head]
+
+
 
     def __callback(self, ch, method, properties, body):
         if not body == '':
@@ -90,19 +90,23 @@ class RabbitMQClient():
             if self.data_format == 'influx':
                 self.body = self.influx2df(self.body)
             if not self.window_width is None or not self.frequency is None:
-                if self.buffer is None:
-                    self.buffer = self.body
+                if self.backup is None:
+                    self.backup = self.body
                 else:
-                    self.concat_buffer(self.body)
+                    self.concat_backup(self.body)
         
     def get_buffer(self):
-        buffer = self.buffer.copy()
-        buffer['start'] = self.start
+        self.stop = pd.Timestamp.utcnow()
+        self.start = self.stop - self.window_width
+        buffer = self.backup.copy()
+        buffer = buffer.loc[buffer['time'] >= self.start]
+        if len(buffer) >= int(self.window_width / self.frequency):
+            buffer_full = True
+        else:
+            buffer_full = False
         buffer['stop'] = self.stop
+        buffer['start'] = self.start
         buffer.rename(
             columns={'time': '_time', self.key: '_' + self.key,'start': '_start', 'stop': '_stop'}, 
             inplace=True)
-        return buffer
-
-
-
+        return buffer_full, buffer
