@@ -1,3 +1,6 @@
+# CUMSTOMIZATIO: DATA DESERIALIZATION
+# Please see the comments above the function deserialize_body
+
 import pika
 import time
 from datetime import datetime
@@ -66,6 +69,23 @@ class RabbitMQClient():
         self.connection.close()
         logging.info("RabbitMQ %s disconnected!" % ('consumer' if self.is_consumer else 'producer'))
 
+    def concat_backup(self, body):
+        self.backup = pd.concat([self.backup, body], ignore_index=True)
+        self.backup = self.backup.sort_values(by='time')
+        head = pd.Timestamp.utcnow() - self.backup_size * self.window_width
+        self.backup = self.backup.loc[self.backup['time'] >= head]
+
+################################## DATA DESERIALIZATION ##################################
+    # Structure of deserialized body
+    # {'value': float, 'time': utc: datetime.datetime}
+    # Please convert the passed column name self.key in __init__ to 'value' if necessary
+    def deserialize_body(self, body):
+        if self.data_format == 'influx':
+            return self.influx2df(body)
+        # ADD NEW ELIF BRANCH FOR NEW DESERIALZATION METHOD BELOW
+        return body
+
+    # Add new deserialization method below
     def influx2df(self, body):
         body = [parse_line(b) for b in body.decode('utf-8').strip().split('\n')]
         if not self.topic is None:
@@ -75,20 +95,12 @@ class RabbitMQClient():
         body['value'] = body['fields'].apply(lambda x: x[self.key])
         body = body[['value', 'time']]
         return body
-
-    def concat_backup(self, body):
-        self.backup = pd.concat([self.backup, body], ignore_index=True)
-        self.backup = self.backup.sort_values(by='time')
-        head = pd.Timestamp.utcnow() - self.backup_size * self.window_width
-        self.backup = self.backup.loc[self.backup['time'] >= head]
-
-
+    # ADD NEW DESERIALIZATION METHOD HERE
+################################## DATA DESERIALIZATION ##################################
 
     def __callback(self, ch, method, properties, body):
         if not body == '':
-            self.body = body
-            if self.data_format == 'influx':
-                self.body = self.influx2df(self.body)
+            self.body = self.deserialize_body(body)
             if not self.window_width is None or not self.frequency is None:
                 if self.backup is None:
                     self.backup = self.body
