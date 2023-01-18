@@ -65,30 +65,26 @@ rabbitmq_producer = RabbitMQClient(rabbitmq_broker_ip, rabbitmq_broker_port, rab
 stopEvent = threading.Event()
 
 def rabbitmq_consumer_run():
-    def _rabbitmq_consumer_run_core():
-        # consume
-        logging.info('RabbitMQ cosumer connection starts...')
-        start = datetime.now()
-        rabbitmq_consumer.connect('preprocessor_consumer', is_consumer=True)
-        rabbitmq_consumer.setup(rabbitmq_consumer_exchange)
-        rabbitmq_consumer.subscribe(window_width, frequency, 
-            rabbitmq_consumer_data_format, rabbitmq_consumer_topic)
-        end = datetime.now()
-        logging.info('RabbitMQ consumer connection takes %ss' % (end - start).total_seconds())
-        rabbitmq_consumer.consume()
-    _rabbitmq_consumer_run_core()
+    # consume
+    logging.info('RabbitMQ cosumer connection starts...')
+    start = datetime.now()
+    rabbitmq_consumer.connect('preprocessor_consumer', is_consumer=True)
+    rabbitmq_consumer.setup(rabbitmq_consumer_exchange)
+    rabbitmq_consumer.subscribe(window_width, frequency, 
+        rabbitmq_consumer_data_format, rabbitmq_consumer_topic)
+    end = datetime.now()
+    logging.info('RabbitMQ consumer connection takes %ss' % (end - start).total_seconds())
+    rabbitmq_consumer.consume()
 
 
 def rabbitmq_producer_run():
-    def _rabbitmq_producer_run_core():
-        # produce
-        logging.info('RabbitMQ producer connection starts...')
-        start = datetime.now()
-        rabbitmq_producer.connect('preprocessor_producer', is_consumer=False)
-        rabbitmq_producer.setup(rabbitmq_producer_exchange)
-        end = datetime.now()
-        logging.info('RabbitMQ producer connection takes %ss' % (end - start).total_seconds())
-    _rabbitmq_producer_run_core()
+    # produce
+    logging.info('RabbitMQ producer connection starts...')
+    start = datetime.now()
+    rabbitmq_producer.connect('preprocessor_producer', is_consumer=False)
+    rabbitmq_producer.setup(rabbitmq_producer_exchange)
+    end = datetime.now()
+    logging.info('RabbitMQ producer connection takes %ss' % (end - start).total_seconds())
 
 
 def preprocess(input: pd.DataFrame):

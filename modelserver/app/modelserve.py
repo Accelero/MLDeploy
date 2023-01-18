@@ -43,28 +43,24 @@ write_api = client.write_api(write_options=SYNCHRONOUS)
 stopEvent = threading.Event()
 
 def rabbitmq_consumer_run():
-    def _rabbitmq_consumer_run_core():
-        # consume
-        logging.info('RabbitMQ cosumer connection starts...')
-        start = datetime.now()
-        rabbitmq_consumer.connect('modelserver_consumer', is_consumer=True)
-        rabbitmq_consumer.setup(rabbitmq_consumer_exchange)
-        rabbitmq_consumer.subscribe()
-        end = datetime.now()
-        logging.info('RabbitMQ consumer connection takes %ss' % (end - start).total_seconds())
-        rabbitmq_consumer.consume()
-    _rabbitmq_consumer_run_core()
+    # consume
+    logging.info('RabbitMQ cosumer connection starts...')
+    start = datetime.now()
+    rabbitmq_consumer.connect('modelserver_consumer', is_consumer=True)
+    rabbitmq_consumer.setup(rabbitmq_consumer_exchange)
+    rabbitmq_consumer.subscribe()
+    end = datetime.now()
+    logging.info('RabbitMQ consumer connection takes %ss' % (end - start).total_seconds())
+    rabbitmq_consumer.consume()
 
 def rabbitmq_producer_run():
-    def _rabbitmq_producer_run_core():
-        # produce
-        logging.info('RabbitMQ producer connection starts...')
-        start = datetime.now()
-        rabbitmq_producer.connect('modelserver_producer', is_consumer=False)
-        rabbitmq_producer.setup(rabbitmq_producer_exchange)
-        end = datetime.now()
-        logging.info('RabbitMQ producer connection takes %ss' % (end - start).total_seconds())
-    _rabbitmq_producer_run_core()
+    # produce
+    logging.info('RabbitMQ producer connection starts...')
+    start = datetime.now()
+    rabbitmq_producer.connect('modelserver_producer', is_consumer=False)
+    rabbitmq_producer.setup(rabbitmq_producer_exchange)
+    end = datetime.now()
+    logging.info('RabbitMQ producer connection takes %ss' % (end - start).total_seconds())
 
 def parse(input_data):
     dict_data = json.loads(input_data)

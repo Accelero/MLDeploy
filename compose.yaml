@@ -9,18 +9,18 @@ volumes:
       type: none
       o: bind
       device: /c/docker-volumes/mldeploy/influx/data
-  influx_config:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /c/docker-volumes/mldeploy/influx/config
-  telegraf_config:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /c/docker-volumes/mldeploy/telegraf/config
+  # influx_config:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     o: bind
+  #     device: /c/docker-volumes/mldeploy/influx/config
+  # telegraf_config:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     o: bind
+  #     device: /c/docker-volumes/mldeploy/telegraf/config
   chronograf:
     driver: local
     driver_opts:
@@ -33,12 +33,12 @@ volumes:
       type: none
       o: bind
       device: /c/docker-volumes/mldeploy/grafana
-  mosquitto_config:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /c/docker-volumes/mldeploy/mosquitto/config
+  # mosquitto_config:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     o: bind
+  #     device: /c/docker-volumes/mldeploy/mosquitto/config
   mosquitto_data:
     driver: local
     driver_opts:
@@ -57,12 +57,12 @@ volumes:
       type: none
       o: bind
       device: /c/docker-volumes/mldeploy/rabbitmq/data
-  rabbitmq_config:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /c/docker-volumes/mldeploy/rabbitmq/config
+  # rabbitmq_config:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     o: bind
+  #     device: /c/docker-volumes/mldeploy/rabbitmq/config
 
 
 
@@ -75,16 +75,16 @@ services:
       - 8086:8086
     volumes:
       - influx_data:/var/lib/influxdb
-      - influx_config:/etc/influxdb
-      # - ./influxdb/influxdb.conf:/etc/influxdb/influxdb.conf # dev-opt
+      # - influx_config:/etc/influxdb
+      - ./influxdb/influxdb.conf:/etc/influxdb/influxdb.conf # dev-opt
 
   telegraf:
     build: telegraf
     networks:
       - ml_net
     volumes:
-      - telegraf_config:/etc/telegraf
-      # - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf # dev-opt
+      # - telegraf_config:/etc/telegraf
+      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf # dev-opt
     depends_on:
       - influxdb
       - mosquitto
@@ -98,8 +98,8 @@ services:
     ports:
       - 1883:1883
     volumes:
-      - mosquitto_config:/mosquitto/config
-      # - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf # dev-opt
+      # - mosquitto_config:/mosquitto/config
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf # dev-opt
       - mosquitto_data:/mosquitto/data
       - mosquitto_log:/mosquitto/log
 
@@ -113,9 +113,9 @@ services:
       # HTTP management UI
       - '15672:15672'
     volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-      - rabbitmq_config:/etc/rabbitmq
-      # - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf # dev-opt
+      - rabbitmq_data:/var/lib/rabbitmq # clean /rabbitmq/data/mnesia?
+      # - rabbitmq_config:/etc/rabbitmq
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf # dev-opt
 
   chronograf:
     build: chronograf
@@ -136,6 +136,15 @@ services:
       - 3000:3000
     volumes:
       - grafana:/var/lib/grafana
+    environment:
+      - GF_DASHBOARDS_MIN_REFRESH_INTERVAL=1s
+      - GF_SMTP_ENABLED=true
+      - GF_SMTP_SKIP_VERIFY=true
+      - GF_SMTP_HOST=${GF_SMTP_HOST}
+      - GF_SMTP_USER=${GF_SMTP_USER}
+      - GF_SMTP_PASSWORD=${GF_SMTP_PASSWORD}
+      - GF_SMTP_FROM_ADDRESS=${GF_SMTP_FROM_ADDRESS}
+      - GF_SMTP_FROM_NAME=${GF_SMTP_FROM_NAME}
     depends_on:
       - influxdb
 
