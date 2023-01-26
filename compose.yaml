@@ -85,7 +85,7 @@ services:
     volumes:
       # - telegraf_config:/etc/telegraf
       - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf # dev-opt
-      - ./telegraf/rabbitmq_output_plugin/config.ini:/usr/local/bin/rabbitmq_output_plugin/config.ini
+      - ./telegraf/rabbitmq_output_plugin/config.ini:/usr/local/bin/rabbitmq_output_plugin/config.ini # dev-opt
     depends_on:
       - influxdb
       - mosquitto
