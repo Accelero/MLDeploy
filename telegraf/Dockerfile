@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip install --no-cache-dir -r /usr/local/bin/requirements.txt
 
 ## add external plugins
-COPY rabbitmq_output_plugin /usr/local/bin/rabbitmq_output_plugin
+COPY plugins /usr/local/bin/plugins
 
 
 
