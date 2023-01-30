@@ -39,18 +39,18 @@ volumes:
   #     type: none
   #     o: bind
   #     device: /c/docker-volumes/mldeploy/mosquitto/config
-  mosquitto_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /c/docker-volumes/mldeploy/mosquitto/data
-  mosquitto_log:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /c/docker-volumes/mldeploy/mosquitto/log
+  # mosquitto_data:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     o: bind
+  #     device: /c/docker-volumes/mldeploy/mosquitto/data
+  # mosquitto_log:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     o: bind
+  #     device: /c/docker-volumes/mldeploy/mosquitto/log
   rabbitmq_data:
     driver: local
     driver_opts:
@@ -88,21 +88,24 @@ services:
       - ./telegraf/plugins:/usr/local/bin/plugins # dev-opt
     depends_on:
       - influxdb
-      - mosquitto
+      # - mosquitto
       - rabbitmq
+    # For linux
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
     restart: on-failure
 
-  mosquitto:
-    build: mosquitto
-    networks:
-      - ml_net
-    ports:
-      - 1883:1883
-    volumes:
-      # - mosquitto_config:/mosquitto/config
-      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf # dev-opt
-      - mosquitto_data:/mosquitto/data
-      - mosquitto_log:/mosquitto/log
+  # mosquitto:
+  #   build: mosquitto
+  #   networks:
+  #     - ml_net
+  #   ports:
+  #     - 1883:1883
+  #   volumes:
+  #     # - mosquitto_config:/mosquitto/config
+  #     - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf # dev-opt
+  #     - mosquitto_data:/mosquitto/data
+  #     - mosquitto_log:/mosquitto/log
 
   rabbitmq: # long starting time
     build: rabbitmq
