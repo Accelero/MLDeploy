@@ -6,10 +6,7 @@
 FROM telegraf:latest
 COPY telegraf.conf /etc/telegraf/telegraf.conf
 
-# copy requirements.txt containing all dependencies for external plugins
-COPY Pipfile Pipfile.lock /usr/local/bin/
-
-## install python, pip and packages from requirements.txt
+## install python and pip
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.9 \
     python3-pip \
@@ -17,13 +14,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-## add external plugins
-COPY plugins /usr/local/bin/plugins
-
-# open micropipenv
+# copy pipfile & pipfile.lock containing all dependencies for external plugins
+COPY Pipfile Pipfile.lock /usr/local/bin/
+# install micropipenv and install dependencies from pipfile and pipfile.lock
 WORKDIR /usr/local/bin
 RUN pip install --no-cache-dir micropipenv[toml] \
   && micropipenv install --deploy \
   && pip uninstall -y micropipenv[toml]
 
+## add external plugins
 WORKDIR /
+COPY plugins /usr/local/bin/plugins
+
