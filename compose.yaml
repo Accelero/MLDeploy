@@ -65,14 +65,34 @@ services:
       - ./docker-volumes/telegraf/config:/etc/telegraf
     depends_on:
       - influxdb
-      - mosquitto
+      # - mosquitto
+      - rabbitmq
+    # For linux
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
+    restart: on-failure
+
+  # mosquitto:
+  #   build: mosquitto
+  #   networks:
+  #     - ml_net
+  #   ports:
+  #     - 1883:1883
+  #   volumes:
+  #     # - mosquitto_config:/mosquitto/config
+  #     - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf # dev-opt
+  #     - mosquitto_data:/mosquitto/data
+  #     - mosquitto_log:/mosquitto/log
 
   mosquitto:
     image: eclipse-mosquitto
     networks:
       - ml_net
     ports:
-      - 1883:1883
+      # AMQP protocol port
+      - '5672:5672'
+      # HTTP management UI
+      - '15672:15672'
     volumes:
       - ./docker-volumes/mosquitto/config:/mosquitto/config
       - mosquitto_log:/mosquitto/log
@@ -95,6 +115,8 @@ services:
       context: ./
     networks:
       - ml_net
+    volumes:
+      - ./preprocessor/app:/home/appuser/app # dev-opt
     depends_on:
       - influxdb
   
@@ -104,5 +126,7 @@ services:
       context: ./
     networks:
       - ml_net
+    volumes:
+      - ./modelserver/app:/home/appuser/app # dev-opt
     depends_on:
       - influxdb

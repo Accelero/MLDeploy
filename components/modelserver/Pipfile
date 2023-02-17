@@ -11,6 +11,8 @@ onnx = "*"
 onnxruntime = "*"
 influxdb-client = {extras = ["ciso"], version = "*"}
 line-protocol-parser = "*"
+pika = "*"
+pandas = "*"
 
 [dev-packages]
 autopep8 = "*"

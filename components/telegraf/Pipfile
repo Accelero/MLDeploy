@@ -4,17 +4,14 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-influxdb-client = {extras = ["ciso"], version = "*"}
-update = "*"
 pandas = "*"
-requests = "*"
-pika = "*"
-func-timeout = "*"
 line-protocol-parser = "*"
+pika = "*"
+grpcio = "*"
+grpcio-tools = "*"
 
 [dev-packages]
-autopep8 = "*"
-matplotlib = "*"
 
 [requires]
 python_version = "3.9"
+python_full_version = "3.9.12"
