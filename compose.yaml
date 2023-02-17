@@ -4,47 +4,9 @@ networks:
 
 volumes:
   influx_data:
-    # driver: local
-    # driver_opts:
-    #   type: none
-    #   o: bind
-    #   device: ./docker-volumes/influx/data
-  # influx_config:
-  #   driver: local
-  #   driver_opts:
-  #     type: none
-  #     o: bind
-  #     device: ./docker-volumes/influx/config
-  # telegraf_config:
-  #   driver: local
-  #   driver_opts:
-  #     type: none
-  #     o: bind
-  #     device: ./docker-volumes/telegraf/config
-  # chronograf:
-  #   driver: local
-  #   driver_opts:
-  #     type: none
-  #     o: bind
-  #     device: ./docker-volumes/chronograf
-  # mosquitto_config:
-  #   driver: local
-  #   driver_opts:
-  #     type: none
-  #     o: bind
-  #     device: ./docker-volumes/mosquitto/config
   mosquitto_log:
-    # driver: local
-    # driver_opts:
-    #   type: none
-    #   o: bind
-    #   device: ./docker-volumes/mosquitto/log
   mosquitto_data:
-    # driver: local
-    # driver_opts:
-    #   type: none
-    #   o: bind
-    #   device: ./docker-volumes/mosquitto/data
+  rabbitmq_data:
 
 services:
   influxdb:
@@ -58,34 +20,31 @@ services:
       - ./docker-volumes/influxdb/config:/etc/influxdb
 
   telegraf:
-    image: telegraf:alpine
+    build: components/telegraf
     networks:
       - ml_net
     volumes:
       - ./docker-volumes/telegraf/config:/etc/telegraf
     depends_on:
       - influxdb
-      # - mosquitto
+      - mosquitto
       - rabbitmq
-    # For linux
-    # extra_hosts:
-    #   - "host.docker.internal:host-gateway"
     restart: on-failure
-
-  # mosquitto:
-  #   build: mosquitto
-  #   networks:
-  #     - ml_net
-  #   ports:
-  #     - 1883:1883
-  #   volumes:
-  #     # - mosquitto_config:/mosquitto/config
-  #     - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf # dev-opt
-  #     - mosquitto_data:/mosquitto/data
-  #     - mosquitto_log:/mosquitto/log
 
   mosquitto:
     image: eclipse-mosquitto
+    networks:
+      - ml_net
+    ports:
+      - 1883:1883
+    volumes:
+      - ./docker-volumes/mosquitto/config:/mosquitto/config
+      - mosquitto_log:/mosquitto/log
+      - mosquitto_data:/mosquitto/data
+
+
+  rabbitmq: # long starting time
+    image: rabbitmq:3.11.3-management-alpine
     networks:
       - ml_net
     ports:
@@ -94,9 +53,8 @@ services:
       # HTTP management UI
       - '15672:15672'
     volumes:
-      - ./docker-volumes/mosquitto/config:/mosquitto/config
-      - mosquitto_log:/mosquitto/log
-      - mosquitto_data:/mosquitto/data
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./docker-volumes/rabbitmq/config:/etc/rabbitmq # dev-opt
 
   chronograf:
     image: chronograf:alpine
@@ -108,6 +66,26 @@ services:
       - ./docker-volumes/chronograf:/var/lib/chronograf
     depends_on:
       - influxdb
+
+  grafana:
+    image: grafana/grafana
+    networks: 
+      - ml_net
+    ports:
+      - 3000:3000
+    volumes:
+      - ./docker-volumes/grafana:/var/lib/grafana
+    environment:
+      - GF_DASHBOARDS_MIN_REFRESH_INTERVAL=1s
+      - GF_SMTP_ENABLED=true
+      - GF_SMTP_SKIP_VERIFY=true
+      - GF_SMTP_HOST=${GF_SMTP_HOST}
+      - GF_SMTP_USER=${GF_SMTP_USER}
+      - GF_SMTP_PASSWORD=${GF_SMTP_PASSWORD}
+      - GF_SMTP_FROM_ADDRESS=${GF_SMTP_FROM_ADDRESS}
+      - GF_SMTP_FROM_NAME=${GF_SMTP_FROM_NAME}
+    depends_on:
+      - influxdb
       
   preprocessor:
     build: 
@@ -115,8 +93,6 @@ services:
       context: ./
     networks:
       - ml_net
-    volumes:
-      - ./preprocessor/app:/home/appuser/app # dev-opt
     depends_on:
       - influxdb
   
@@ -126,7 +102,5 @@ services:
       context: ./
     networks:
       - ml_net
-    volumes:
-      - ./modelserver/app:/home/appuser/app # dev-opt
     depends_on:
       - influxdb

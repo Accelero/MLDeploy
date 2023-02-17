@@ -5,8 +5,11 @@
 
 @REM copy files
 if not exist ".\docker-volumes\chronograf\chronograf-v1.db" xcopy ".\components\chronograf\chronograf-v1.db" ".\docker-volumes\chronograf\" 
+if not exist ".\docker-volumes\grafana\grafana.db" xcopy ".\components\grafana\grafana.db" ".\docker-volumes\grafana\" 
 if not exist ".\docker-volumes\influxdb\config\influxdb.conf" xcopy ".\components\influxdb\influxdb.conf" ".\docker-volumes\influxdb\config\"
 if not exist ".\docker-volumes\telegraf\config\telegraf.conf" xcopy ".\components\telegraf\telegraf.conf" ".\docker-volumes\telegraf\config\" 
+if not exist ".\docker-volumes\rabbitmq\config\rabbitmq.conf" xcopy ".\components\rabbitmq\rabbitmq.conf" ".\docker-volumes\rabbitmq\config\"
+
 if not exist ".\docker-volumes\mosquitto\config\mosquitto.conf" xcopy ".\external\mosquitto\mosquitto.conf" ".\docker-volumes\mosquitto\config\"
 
 echo "bind mount files set up"
