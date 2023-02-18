@@ -137,7 +137,7 @@ if __name__ == '__main__':
             # print all data using influxdb form
             if not len(output):
                 return
-            info = "\n ".join([f"grpc_server,topic=arburg value={item['value']} {int(item['time'] * 1e9)}" for item in output])
+            info = "\n ".join([f"grpc_server,topic=input value={item['value']} {int(item['time'] * 1e9)}" for item in output])
             output.clear()
             print(info, flush=True)
             return
