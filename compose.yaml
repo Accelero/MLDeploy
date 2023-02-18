@@ -7,6 +7,7 @@ volumes:
   mosquitto_log:
   mosquitto_data:
   rabbitmq_data:
+  rabbitmq_log:
 
 services:
   influxdb:
@@ -53,8 +54,9 @@ services:
       # HTTP management UI
       - '15672:15672'
     volumes:
+      - ./docker-volumes/rabbitmq/config/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
       - rabbitmq_data:/var/lib/rabbitmq
-      - ./docker-volumes/rabbitmq/config:/etc/rabbitmq # dev-opt
+      - rabbitmq_log:/var/log/rabbitmq
 
   chronograf:
     image: chronograf:alpine

@@ -10,6 +10,7 @@ import proto.ProcessLogConfiguration_pb2 as pc
 import proto.ProtoProcessLogEntryContainer_pb2 as pe
 
 import asyncio
+import socket
 
 from config import config
 from mylogging import logging
@@ -66,8 +67,16 @@ def postprocess(container):
 
 
 def start_request():
+    ip_ad = 'host.docker.internal'
+    port = 59001
     logging.info('gRPC request started...')
-    channel = grpc.insecure_channel('host.docker.internal:59001') # Valid for windows and mac. For linux: Starting from version 20.10 , the Docker Engine now also supports communicating with the Docker host via host.docker.internal on Linux. Unfortunately, this won't work out of the box on Linux because you need to add the extra — add-hostrun flag: --add-host=host.docker.internal:host-gateway
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    result = sock.connect_ex((ip_ad, port))
+    while not result == 0:
+        logging.warning('Port to Arburg-gRPC is not opened! Please open the Arburg-gRPC server!')
+        time.sleep(0.2)
+        result = sock.connect_ex((ip_ad, port))
+    channel = grpc.insecure_channel(f'{ip_ad}:{port}') # Valid for windows and mac. For linux: Starting from version 20.10 , the Docker Engine now also supports communicating with the Docker host via host.docker.internal on Linux. Unfortunately, this won't work out of the box on Linux because you need to add the extra — add-hostrun flag: --add-host=host.docker.internal:host-gateway    
     stub = pdp.ProcessLogDataProviderStub(channel)
     containers = request_process_log_data_stream(stub)
     return containers
@@ -101,7 +110,6 @@ def signal_handler(containers, grpc_client_thread):
 if __name__ == '__main__':
     stop_event.clear()
 
-    # setup
     containers = start_request()
     grpc_client_thread = threading.Thread(target=lambda: run_grpc_client(containers))
     signal.signal(signal.SIGINT, lambda signal, frame: signal_handler(containers, grpc_client_thread))
