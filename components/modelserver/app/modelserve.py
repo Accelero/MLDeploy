@@ -12,12 +12,6 @@ import json
 import time
 import pika
 
-window_width = config.parser.get('General', 'window_width')
-frequency = config.parser.get('General', 'frequency')
-
-window_width = pd.to_timedelta(window_width)
-frequency = pd.to_timedelta(frequency)
-
 # RabbitMQ subscriber
 rabbitmq_broker_ip = config.parser.get('RabbitMQ', 'broker_ip')
 rabbitmq_broker_port = config.parser.get('RabbitMQ', 'broker_port')
@@ -66,7 +60,7 @@ def parse(input_data):
     dict_data = json.loads(input_data)
     time_stamp = dict_data['time']
     feature = np.fromstring(dict_data['fields']['feature'], sep='\n', dtype=np.float32)
-    feature = np.reshape(feature, (1, int(window_width / frequency)))
+    feature = np.reshape(feature, (1, -1))
     return time_stamp, feature
 
 def evalloss():

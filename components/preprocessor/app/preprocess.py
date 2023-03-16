@@ -24,6 +24,8 @@ window_width = pd.to_timedelta(window_width)
 window_step = pd.to_timedelta(window_step)
 frequency = pd.to_timedelta(frequency)
 
+num = int(config.parser.get('General', 'num'))
+
 # RabbitMQ subscriber
 rabbitmq_broker_ip = config.parser.get('RabbitMQ', 'broker_ip')
 rabbitmq_broker_port = config.parser.get('RabbitMQ', 'broker_port')
@@ -60,7 +62,11 @@ rabbitmq_producer = RabbitMQClient(rabbitmq_broker_ip, rabbitmq_broker_port, rab
 # |> filter(fn: (r) => r["_field"] == "value")'
 
 
+feature_start = None
+feature_end = None
 
+global_time_stamp = None
+global_feature = None
 
 stopEvent = threading.Event()
 
@@ -86,23 +92,67 @@ def rabbitmq_producer_run():
     end = datetime.now()
     logging.info('RabbitMQ producer connection takes %ss' % (end - start).total_seconds())
 
+def preprocess(_input: pd.DataFrame):
+    global feature_start
+    global feature_end
+    global global_time_stamp
+    global global_feature
+    df = _input.reset_index(drop=True)
+    if num > 0: # for discrete features
+        if not df.iloc[0]['_value'] == 0:
+            raise RuntimeError('The first value is not 0')
+        start_idx = df.index[df['_value'] > 0][0]
+        zero_idx = df.index[df['_value'] == 0]
+        end_idx = zero_idx[zero_idx > start_idx][0]
 
-def preprocess(input: pd.DataFrame):
-            df = input
-            if not df.empty:
-                df.set_index('_time', inplace=True)
-                end = df.loc[df.index[0],'_stop']
-                start = df.loc[df.index[0],'_start']
-                new_time_index = pd.date_range(
-                    start=start, end=end, freq=frequency, inclusive='right')
-                df = df.groupby(new_time_index[new_time_index.searchsorted(
+
+        new_feature_start = df.iloc[start_idx]['_time']
+        new_feature_end = df.iloc[end_idx]['_time']
+        if new_feature_start == feature_start or new_feature_end == feature_end: # THIS COMPARISON DOES NOT WORK
+            logging.info('This interval exists already')
+            return global_time_stamp, global_feature
+        feature_start = new_feature_start
+        feature_end = new_feature_end
+        freq = (feature_end - feature_start) / num
+
+        df = df.loc[start_idx:end_idx-1]
+
+        df.reset_index(inplace=True, drop='index')
+        df.set_index('_time', inplace=True)
+        new_time_index = pd.date_range(
+            start=feature_start, end=feature_end, freq=freq, inclusive='left')
+        df = df.groupby(new_time_index[new_time_index.searchsorted(
                     df.index, side='left')]).mean(numeric_only=True)
-                df = df.reindex(index=new_time_index)
-                df = df.interpolate(method='linear', limit_direction='both')
-                df.index.name = '_time'
-                time_stamp = df.index[-1]
-                feature = df.to_csv(columns=['_value'], header=False, index=False)
-                return time_stamp, feature
+        df = df.reindex(index=new_time_index)
+        df = df.interpolate(method='linear', limit_direction='both')
+
+        time_stamp = df.index[0] + (df.index[-1] - df.index[0]) / 2
+        global_time_stamp = time_stamp
+
+
+        feature = df['_value']
+        feature_max = max(feature)
+        feature_min = min(feature)
+        feature = (feature - feature_min) / (feature_max - feature_min)
+        feature = feature.to_csv(columns=['_value'], header=False, index=False)
+        global_feature = feature
+
+        return global_time_stamp, global_feature
+    
+    if not df.empty:
+        df.set_index('_time', inplace=True)
+        end = df.loc[df.index[0],'_stop']
+        start = df.loc[df.index[0],'_start']
+        new_time_index = pd.date_range(
+            start=start, end=end, freq=frequency, inclusive='right')
+        df = df.groupby(new_time_index[new_time_index.searchsorted(
+            df.index, side='left')]).mean(numeric_only=True)
+        df = df.reindex(index=new_time_index)
+        df = df.interpolate(method='linear', limit_direction='both')
+        df.index.name = '_time'
+        time_stamp = df.index[-1]
+        feature = df.to_csv(columns=['_value'], header=False, index=False)
+        return time_stamp, feature
 
 @func_set_timeout(window_step.total_seconds())
 def event():
@@ -119,7 +169,7 @@ def event():
             # logging.warning('RabbitMQ consumer buffer not full!')
             raise RuntimeError('RabbitMQ consumer buffer not full, waiting...')
         time_stamp, feature = preprocess(buffer)
-        record = {'measurement':'features', 'fields':{'feature':feature}, 'time': time_stamp}
+        record = {'measurement':'features', 'fields':{'feature':feature}, 'time':time_stamp}
         # send data by rabbitmq producer
         rabbitmq_producer.publish(json.dumps(record, default=str))
         # # persistent storage

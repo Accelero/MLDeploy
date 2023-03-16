@@ -95,6 +95,8 @@ services:
       context: ./
     networks:
       - ml_net
+    volumes:
+      - ./components/preprocessor/app:/app # dev-opt
     depends_on:
       - influxdb
   
@@ -104,5 +106,7 @@ services:
       context: ./
     networks:
       - ml_net
+    volumes:
+      - ./components/modelserver/app:/app # dev-opt
     depends_on:
       - influxdb

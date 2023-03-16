@@ -1,8 +1,6 @@
 # CUMSTOMIZATIO: DATA DESERIALIZATION
 # Please see the comments above the function deserialize_body
 
-
-
 import pika
 import time
 from datetime import datetime
@@ -91,10 +89,14 @@ class RabbitMQClient():
     def influx2df(self, body):
         body = [parse_line(b) for b in body.decode('utf-8').strip().split('\n')]
         if not self.topic is None:
-            body = [b for b in body if b['tags']['topic'] == self.topic]
+            try:
+                body = [b for b in body if b['tags']['topic'] == self.topic]
+                key = self.key
+            except:
+                key = body[0]['tags']['id'].split(';')[1].split('=')[1]
         body = pd.DataFrame(body)
         body['time'] = pd.to_datetime(body['time'], utc=True)
-        body['value'] = body['fields'].apply(lambda x: x[self.key])
+        body['value'] = body['fields'].apply(lambda x: x[key])
         body = body[['value', 'time']]
         return body
     # ADD NEW DESERIALIZATION METHOD HERE
