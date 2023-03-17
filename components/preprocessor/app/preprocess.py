@@ -100,7 +100,10 @@ def preprocess(_input: pd.DataFrame):
     df = _input.reset_index(drop=True)
     if num > 0: # for discrete features
         if not df.iloc[0]['_value'] == 0:
-            raise RuntimeError('The first value is not 0')
+            logging.info('The first value is not 0')
+            if not global_time_stamp is None and not global_feature is None:
+                return global_time_stamp, global_feature
+            raise RuntimeError('Value does not exist!')
         start_idx = df.index[df['_value'] > 0][0]
         zero_idx = df.index[df['_value'] == 0]
         end_idx = zero_idx[zero_idx > start_idx][0]
@@ -172,6 +175,7 @@ def event():
         record = {'measurement':'features', 'fields':{'feature':feature}, 'time':time_stamp}
         # send data by rabbitmq producer
         rabbitmq_producer.publish(json.dumps(record, default=str))
+        logging.info(f'time {time_stamp} sent')
         # # persistent storage
         # with write_api as _write_client:
         #     _write_client.write(f'{}/autogen','wbk', record=record)

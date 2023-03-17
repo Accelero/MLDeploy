@@ -72,7 +72,9 @@ def evalloss():
             raise RuntimeError('RabbitMQ consumer connecting to RabbitMQ broker')
         logging.debug('Getting buffer from RabbitMQ broker...')
         time_stamp, feature = parse(rabbitmq_consumer.body)
+        logging.info(time_stamp)
         loss = inference.eval(feature)
+        logging.info(f'time {time_stamp} loss {loss} calculated!')
         record = {'measurement':'prediction', 'fields':{'loss':loss.item()}, 'time': time_stamp}
         # send data by rabbitmq producer
         # rabbitmq_producer.publish(json.dumps(record, default=str))
