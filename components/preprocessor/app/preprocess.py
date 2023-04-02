@@ -106,8 +106,9 @@ def preprocess(_input: pd.DataFrame):
             raise RuntimeError('Value does not exist!')
         start_idx = df.index[df['_value'] > 0][0]
         zero_idx = df.index[df['_value'] == 0]
-        end_idx = zero_idx[zero_idx > start_idx][0]
-
+        zero_idx = zero_idx[zero_idx > start_idx]
+        zero_idx = zero_idx[:-1][(zero_idx[1:] - zero_idx[:-1]) == 1] # continuity
+        end_idx = zero_idx[0]
 
         new_feature_start = df.iloc[start_idx]['_time']
         new_feature_end = df.iloc[end_idx]['_time']

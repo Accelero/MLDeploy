@@ -24,5 +24,8 @@ def rabbitmq_producer_run():
 
 rabbitmq_producer_run()
 
-for line in sys.stdin:
-    rabbitmq_producer.publish(line)
+while True:
+    try:
+        line = sys.stdin.readline()
+        rabbitmq_producer.publish(line)
+    except: pass
