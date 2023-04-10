@@ -97,7 +97,8 @@ class RabbitMQClient():
         body = pd.DataFrame(body)
         body['time'] = pd.to_datetime(body['time'], utc=True)
         body['value'] = body['fields'].apply(lambda x: x[key])
-        body = body[['value', 'time']]
+        body['tag'] = pd.Series([key] * len(body))
+        body = body[['value', 'time', 'tag']]
         return body
     # ADD NEW DESERIALIZATION METHOD HERE
 ################################## DATA DESERIALIZATION ##################################
@@ -123,6 +124,6 @@ class RabbitMQClient():
         buffer['stop'] = self.stop
         buffer['start'] = self.start
         buffer.rename(
-            columns={'time': '_time', self.key: '_' + self.key,'start': '_start', 'stop': '_stop'}, 
+            columns={'time': '_time', self.key: '_' + self.key, 'tag': '_tag', 'start': '_start', 'stop': '_stop'}, 
             inplace=True)
         return buffer_full, buffer
