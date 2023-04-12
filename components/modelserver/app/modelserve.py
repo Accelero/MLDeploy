@@ -1,4 +1,6 @@
 import inference
+from func_timeout import func_set_timeout
+import func_timeout
 from influxdb_client import InfluxDBClient
 from influxdb_client.client.write_api import SYNCHRONOUS
 from config import config
@@ -11,6 +13,10 @@ import pandas as pd
 import json
 import time
 import pika
+
+window_step = config.parser.get('General', 'window_step')
+
+window_step = pd.to_timedelta(window_step)
 
 # RabbitMQ subscriber
 rabbitmq_broker_ip = config.parser.get('RabbitMQ', 'broker_ip')
@@ -63,6 +69,7 @@ def parse(input_data):
     feature = np.reshape(feature, (1, -1))
     return time_stamp, feature
 
+@func_set_timeout(window_step.total_seconds())
 def evalloss():
     try:
         # get data by rabbitmq consumer
@@ -72,7 +79,6 @@ def evalloss():
             raise RuntimeError('RabbitMQ consumer connecting to RabbitMQ broker')
         logging.debug('Getting buffer from RabbitMQ broker...')
         time_stamp, feature = parse(rabbitmq_consumer.body)
-        logging.info(time_stamp)
         loss = inference.eval(feature)
         logging.info(f'time {time_stamp} loss {loss} calculated!')
         record = {'measurement':'prediction', 'fields':{'loss':loss.item()}, 'time': time_stamp}
@@ -87,7 +93,11 @@ def evalloss():
 
 def run():
     while not stopEvent.is_set():
-        evalloss()
+        try:
+            evalloss()
+        except func_timeout.exceptions.FunctionTimedOut as e: 
+            logging.error('Time out error: %s' % e)
+        time.sleep(window_step.total_seconds())
 
 rabbitmq_consumer_thread = threading.Thread(target=rabbitmq_consumer_run)
 # rabbitmq_producer_thread = threading.Thread(target=rabbitmq_producer_run)
