@@ -97,7 +97,6 @@ def run():
             evalloss()
         except func_timeout.exceptions.FunctionTimedOut as e: 
             logging.error('Time out error: %s' % e)
-        time.sleep(window_step.total_seconds())
 
 rabbitmq_consumer_thread = threading.Thread(target=rabbitmq_consumer_run)
 # rabbitmq_producer_thread = threading.Thread(target=rabbitmq_producer_run)

@@ -195,20 +195,42 @@ def preprocess(_input: pd.DataFrame):
         # new_feature_end = x2_orig[x1 <= x2_1[split[1]]][0]
 
         # alternative 2: absolute values
+        # split = []
+        # for boundary_absolute in boundaries_absolute:
+        #     s = np.where((y2 > boundary_absolute - deviation_NC) & (y2 < boundary_absolute + deviation_NC))[0]
+        #     if len(s) > 0:
+        #         split.append(s[len(s) // 2])
+        # split = np.sort(split)
+        # logging.info(split)
+        # if len(split) < 1:
+        #     raise RuntimeError("Start of feature does not exist!")
+        # if len(split) < 2:
+        #     raise RuntimeError("End of feature does not exist!")
+        # start = np.where(x1 <= x2[split[-2]])[0][-1]
+        # new_feature_start = x1[start] # new_feature_start = x1_orig[start]
+        # end = np.where(x1 <= x2[split[-1]])[0][-1]
+        # new_feature_end = x1[end] # new_feature_end = x1_orig[end]
+        # df = df.iloc[start:end]
+        
         split = []
-        for boundary_absolute in boundaries_absolute:
-            s = np.where((y2 > boundary_absolute - deviation_NC) & (y2 < boundary_absolute + deviation_NC))[0]
-            if len(s) > 0:
-                split.append(s[len(s) // 2])
-        split = np.sort(split)
-        logging.info(split)
-        if len(split) < 1:
-            raise RuntimeError("Start of feature does not exist!")
-        if len(split) < 2:
-            raise RuntimeError("End of feature does not exist!")
-        start = np.where(x1 <= x2[split[-2]])[0][-1]
+        starts = np.array([]).astype(int)
+        starts = np.concatenate((starts, np.where(
+                    (y2 == 0)[:-1] * (y2[1:] > 0)
+                )[0] + 1))
+        ends = np.array([]).astype(int)
+        ends = np.concatenate((ends, np.where(
+                    (y2 > 0)[:-1] * (y2[1:] == 0)
+                )[0]))
+
+        if len(ends) > 0 and len(starts) == len(ends):
+            start_ = starts[-1]
+            end_ = ends[-1]
+            split = np.array([start_, end_])
+        print(split)
+
+        start = split[0]
         new_feature_start = x1[start] # new_feature_start = x1_orig[start]
-        end = np.where(x1 <= x2[split[-1]])[0][-1]
+        end = split[1]
         new_feature_end = x1[end] # new_feature_end = x1_orig[end]
         df = df.iloc[start:end]
 
