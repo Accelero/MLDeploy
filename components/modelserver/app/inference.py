@@ -11,12 +11,11 @@ input_name = 'input'
 other_input_name = 'input_1'
 
 def eval(inputData):
-    while True:
-        try:
-            ort_input = {input_name: inputData}
-            recon = ort_session.run(None, ort_input)
-            break
-        except:
-            input_name = other_input_name
+    try:
+        ort_input = {input_name: inputData}
+        recon = ort_session.run(None, ort_input)
+    except:
+        ort_input = {input_name: inputData}
+        recon = ort_session.run(None, ort_input)
     loss = np.mean((recon-inputData)**2, axis=2)
     return loss
