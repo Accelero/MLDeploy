@@ -101,7 +101,7 @@ def rabbitmq_producer_run():
 
 def recap_df_continuous(df, df_assist):
     start = df.iloc[0]['_start']
-    end = df.iloc[0]['_end']
+    end = df.iloc[0]['_stop']
     freq = frequency
     return df, start, end, freq
 
