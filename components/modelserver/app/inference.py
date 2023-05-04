@@ -15,7 +15,7 @@ def eval(inputData):
         ort_input = {input_name: inputData}
         recon = ort_session.run(None, ort_input)
     except:
-        ort_input = {input_name: inputData}
+        ort_input = {other_input_name: inputData}
         recon = ort_session.run(None, ort_input)
     loss = np.mean((recon-inputData)**2, axis=2)
     return loss
