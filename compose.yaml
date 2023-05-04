@@ -58,17 +58,6 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
       - rabbitmq_log:/var/log/rabbitmq
 
-  chronograf:
-    image: chronograf:alpine
-    networks: 
-      - ml_net
-    ports:
-      - 8888:8888
-    volumes:
-      - ./docker-volumes/chronograf:/var/lib/chronograf
-    depends_on:
-      - influxdb
-
   grafana:
     image: grafana/grafana
     networks: 

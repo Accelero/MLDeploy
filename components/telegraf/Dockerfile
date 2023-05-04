@@ -4,7 +4,6 @@
 # alpine 3.16 only provides python 3.10
 # Thus, change telegraf:alpine to telegraf:latest
 FROM telegraf:latest
-COPY telegraf.conf /etc/telegraf/telegraf.conf
 
 ## install python and pip
 RUN apt-get update && apt-get install -y --no-install-recommends \

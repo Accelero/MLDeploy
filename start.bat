@@ -4,7 +4,6 @@
 @REM The folder "docker-volumes" and it's contents will be first deleted and then recreated, if it already exists. 
 
 @REM copy files
-if not exist ".\docker-volumes\chronograf\chronograf-v1.db" xcopy ".\components\chronograf\chronograf-v1.db" ".\docker-volumes\chronograf\" 
 if not exist ".\docker-volumes\grafana\grafana.db" xcopy ".\components\grafana\grafana.db" ".\docker-volumes\grafana\" 
 if not exist ".\docker-volumes\influxdb\config\influxdb.conf" xcopy ".\components\influxdb\influxdb.conf" ".\docker-volumes\influxdb\config\"
 if not exist ".\docker-volumes\telegraf\config\telegraf.conf" xcopy ".\components\telegraf\telegraf.conf" ".\docker-volumes\telegraf\config\" 

@@ -1,3 +1,0 @@
-# TODOs
-- Logging
-- Better Dashboard
