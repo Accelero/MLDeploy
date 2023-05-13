@@ -7,6 +7,7 @@ onnx_model = onnx.load('autoencoder.onnx')
 onnx.checker.check_model(onnx_model)
 ort_session = onnxruntime.InferenceSession('autoencoder.onnx')
 
+# two input names exists due to the default input name of tensorflow is "input_1" but we usually assign "input" as input name in "pytorch"
 input_name = 'input'
 other_input_name = 'input_1'
 
