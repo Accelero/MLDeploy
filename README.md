@@ -7,57 +7,49 @@
 Details are written in the *User Manual*.
 
 ## Architecture of framework
-The following figure shows the relationship between *Data Source* and the basic structure of *MLDeploy* consisting of *Platform* and *Hut*.
+The following figure shows the framework. All of the components run in containers, which provides an isolation environment from the operating system.
 
 ![](abstract_concept.png "MLDeploy Structure")
 
-- *Data source*
+- *Raw Data*
 
     provides input data from a server. Currently supported servers are the *Arburg-OPCUA* server, *Arburg-gRPC* server and *ControllerSim-MQTT* server.
 
-- *Platform*
+- *Telegraf*
 
-    provides the collection, sending and storing of the incoming data from *Data Source*. All of the *Platform* components run in containers, which provides an isolation environment from the operating system.
+    is an agent, developed *InfluxData*, which collects incoming data from *Data Source* via
+    
+    **input-plugins** such as *opcua* (on-premise), *mqtt* (on-premise) and *arburg-grpc* (self-written)
+    
+    and subsequently sends data in certain data format such as *influx* via 
+    
+    **output-plugins** such as *influx* (on-premise) and *rabbitmq* (self-written).
 
-    - *Telegraf*
+    **Hint**: The input-plugin *MQTT* works only when the message broker *Mosquitto* is also running in the background. So does the output-plugin *rabbitmq* when *RabbitMQ* is running.
 
-        is an agent, developed *InfluxData*, which collects incoming data from *Data Source* via
-        
-        **input-plugins** such as *opcua* (on-premise), *mqtt* (on-premise) and *arburg-grpc* (self-written)
-        
-        and subsequently sends data in certain data format such as *influx* via 
-        
-        **output-plugins** such as *influx* (on-premise) and *rabbitmq* (self-written).
+- *RabbitMQ* 
 
-        **Hint**: The input-plugin *MQTT* works only when the message broker *Mosquitto* is also running in the background. So does the output-plugin *rabbitmq* when *RabbitMQ* is running.
+    broker is a mesage broker implementing AMQP and it receives messages from *AMQP* (*RabbitMQ*) clients and routes messages to the appropriate subscribing clients. 
+    
+    Here, *RabbitMQ* receives messages from several clients such as *RabbitMQ* output-plugin of *Platform* with *exchanger=input* and the publisher in *Preprocessor* of *Hut* with *exchanger=preprocessor* and routes the data to the subscriber in *Preprocessor* of *Hut* and the subscriber in *Modelserver* respectively.
 
-    - *RabbitMQ* 
+- *InfluxDB*
 
-        broker is a mesage broker implementing AMQP and it receives messages from *AMQP* (*RabbitMQ*) clients and routes messages to the appropriate subscribing clients. 
-        
-        Here, *RabbitMQ* receives messages from several clients such as *RabbitMQ* output-plugin of *Platform* with *exchanger=input* and the publisher in *Preprocessor* of *Hut* with *exchanger=preprocessor* and routes the data to the subscriber in *Preprocessor* of *Hut* and the subscriber in *Modelserver* respectively.
+    is an open-source time series database developed by *InfluxData* for storage and retrieval of time series data in fields. 
+    
+    Here, it stores data sent by *Telegraf* output plugin *influxdb* (*databse=input*) and the *influxdb* client of in *Modelserver* (*database=predictions*). Then, the visualization tools *Chronograf* and *Grafana* retrives data from *InfluxDB*.
 
-    - *InfluxDB*
+- *Preprocessor*
 
-        is an open-source time series database developed by *InfluxData* for storage and retrieval of time series data in fields. 
-        
-        Here, it stores data sent by *Telegraf* output plugin *influxdb* (*databse=input*) and the *influxdb* client of in *Modelserver* (*database=predictions*). Then, the visualization tools *Chronograf* and *Grafana* retrives data from *InfluxDB*.
+    is written in *python* and interpolates the time-stamped input data obtained by *RabbitMQ* subscriber (*exchanger=input*) with evenly distrubited timestamp intervals in each time frame and sends them again via *RabbitMQ* publisher (*exchanger=proprocessor*) for subsequent analysis by *Modelserver*.
 
-- *Hut*
+- *Modelserver*
 
-    provides the preprocessing, prediction, visualization, alarming of the incomming data. Compared to *Grafana*, the component *Chronograf*, which is also developed by *InfluxData*,  provides similiar functions and will be removed in coming version.
+    is written in *python* which produces the construction loss between the preprocessed input data obtained by *RabitMQ* subscriber (*exchanger=proprocessor*) and the prediction by the autoencoder and stores the data to *InfluxDB* by an *influxdb* client (*database=predictions*).
 
-    - *Preprocessor*
+- *Grafana*
 
-        is written in *python* and interpolates the time-stamped input data obtained by *RabbitMQ* subscriber (*exchanger=input*) with evenly distrubited timestamp intervals in each time frame and sends them again via *RabbitMQ* publisher (*exchanger=proprocessor*) for subsequent analysis by *Modelserver*.
-
-    - *Modelserver*
-
-        is written in *python* which produces the construction loss between the preprocessed input data obtained by *RabitMQ* subscriber (*exchanger=proprocessor*) and the prediction by the autoencoder and stores the data to *InfluxDB* by an *influxdb* client (*database=predictions*).
-
-    - *Grafana*
-
-        is a multi-platform open source analytics and interactive visualization web application. It not only visualizes the input data from *Data Source* and the construction loss obtained by *Modelserver* but also send alarms via E-mails to users when the construction loss exceeds a certain value.
+    is a multi-platform open source analytics and interactive visualization web application. It not only visualizes the input data from *Data Source* and the construction loss obtained by *Modelserver* but also send alarms via E-mails to users when the construction loss exceeds a certain value.
 
 
 ## Structure of repository
