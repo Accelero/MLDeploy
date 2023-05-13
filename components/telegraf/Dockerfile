@@ -5,6 +5,12 @@
 # Thus, change telegraf:alpine to telegraf:latest
 FROM telegraf:latest
 
+# The following installation of python interpreter, pip, micropipenv, installation of dependencies and uninstallation of micropipenv
+# is only for plugins with python.
+# Please note that all the required packages for all the plugins are installed here, not separately for each plugin.
+# For Go plugins, Go compiler should be installed and the binary file should be compiled from the source file.
+# After that the original source file and the Go compiler can be uninstalled.
+## -------------------- ONLY FOR PYTHON: START ------------------------
 ## install python and pip
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.9 \
@@ -12,7 +18,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-
 # copy pipfile & pipfile.lock containing all dependencies for external plugins
 COPY Pipfile Pipfile.lock /usr/local/bin/
 # install micropipenv and install dependencies from pipfile and pipfile.lock
@@ -20,10 +25,11 @@ WORKDIR /usr/local/bin
 RUN pip install --no-cache-dir micropipenv[toml] \
   && micropipenv install --deploy \
   && pip uninstall -y micropipenv[toml]
+## -------------------- ONLY FOR PYTHON: END ------------------------
 
 ## add external plugins
 WORKDIR /
 COPY plugins /usr/local/bin/plugins
 
-
+# copy the configuration to the contaienr
 COPY telegraf.conf /etc/telegraf/telegraf.conf
