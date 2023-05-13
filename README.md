@@ -85,7 +85,7 @@ project
         pipenv shell
         ```
     - Change directory to external/controllersim/app by entering the command
-        ```bash
+        ```
         cd app
         ```
     - Run the sine wave simulator by executing the main.py file by entering the command
@@ -106,8 +106,8 @@ project
         ```
     - Download OPC UA Server Simulator under https://integrationobjects.com/sioth-opc/sioth-opc-unified-architecture/opc-ua-server-simulator/
     - Move the files containing the simulated data ValueSpace.csv and AddressSpace.csv from the repository external/arburg to the destination repository. It is usually
-        ```bash
-        C:\Program Files\Integration Objects \Integration Objects ’ OPC UA Server Simulator\DATA
+        ```
+        C:\Program Files\Integration Objects\Integration Objects ’ OPC UA Server Simulator\DATA
         ```
     - Open the OPC UA Server Simulator and configure the Security Policies and Configuration under Settings as below:
         ![](opcua_config.png "OPC UA Config 1")
