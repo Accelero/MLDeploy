@@ -77,7 +77,7 @@ project
 - Sine Wave Simulator
     - Clone the "ML-Deploy" repository of branch "sine_wave_simulator" by entering the command
         ```bash
-        git clone--branch sine_wave_simulator https://hub.autolern.org/wbk/MLDeploy .git
+        git clone--branch sine_wave_simulator https://hub.autolern.org/wbk/MLDeploy.git
         ```
     - Navigate to the repository external/controllersim and open a command window at this path.
     - Create a virtual environment at this path according the Pipfile by entering the command
@@ -102,7 +102,7 @@ project
 - Arburg Freeformer using OPC UA Server Simulator
     - Clone the "ML-Deploy" repository of branch "arburg" by entering the command
         ```bash
-        git clone --branch arburg https://hub.autolern. org/wbk/MLDeploy.git
+        git clone --branch arburg https://hub.autolern.org/wbk/MLDeploy.git
         ```
     - Download OPC UA Server Simulator under https://integrationobjects.com/sioth-opc/sioth-opc-unified-architecture/opc-ua-server-simulator/
     - Move the files containing the simulated data ValueSpace.csv and AddressSpace.csv from the repository external/arburg to the destination repository. It is usually
