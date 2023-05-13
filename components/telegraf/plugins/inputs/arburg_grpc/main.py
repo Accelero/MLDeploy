@@ -15,6 +15,7 @@ import socket
 from config import config
 from mylogging import logging
 
+## CONFIGURATION
 sensor_name = 1
 sample_interval = float(config.get('SENSOR_' + str(sensor_name), 'sample_interval'))
 send_interval = float(config.get('SENSOR_' + str(sensor_name), 'send_interval'))
@@ -22,15 +23,15 @@ pos = int(config.get('SENSOR_' + str(sensor_name), 'pos'))
 buffer_size = int(config.get('SENSOR_' + str(sensor_name), 'buffer_size'))
 tab = eval('pe.ProtoProcessLogEntryDataWert.' + config.get('SENSOR_' + str(sensor_name), 'tab_name'))
 resolution_value = int(config.get('SENSOR_' + str(sensor_name), 'resolution'))
-
 pos_list = [pos]
 buffer = []
 
-
+# stop event
 stop_event = threading.Event()
 
+# ---------------------------------------------------------------- START REQUEST: start the client ----------------------------------------------------------------
+# set configuration for protobuf
 def make_process_log_configuration():
-
     parameters = [
         pc.Parameter(
                 tab=tab,
@@ -43,29 +44,12 @@ def make_process_log_configuration():
         parameters=parameters
     )
     return process_log_configuration
-
+# make request
 def request_process_log_data_stream(stub):
     containers = stub.RequestProcessLogDataStream(
         make_process_log_configuration())
     return containers
-
-def postprocess(container):
-    global buffer
-    arr = []
-    for entry in container.entries:
-        arr.append([
-        *[data.protoWert.mFloat for data in entry.protoProcessLogData]])
-    arr = np.array(arr)
-    if len(buffer) == 0:
-        buffer = arr
-    else:
-        buffer = np.vstack((np.array(buffer), arr))
-    if len(buffer) > 0:
-        buffer = buffer[-buffer_size:, :]
-    buffer = buffer.tolist()
-
-
-
+# start request: blocking
 def start_request():
     ip_ad = 'host.docker.internal'
     port = 59001
@@ -80,22 +64,37 @@ def start_request():
     stub = pdp.ProcessLogDataProviderStub(channel)
     containers = request_process_log_data_stream(stub)
     return containers
-
-def do_request(containers): # blocking
+# ---------------------------------------------------------------- RUN GRPC CLIENT: retrieve the data from the container --------------------------------
+# post porcess to list
+def postprocess(container):
+    global buffer
+    arr = []
+    for entry in container.entries:
+        arr.append([
+        *[data.protoWert.mFloat for data in entry.protoProcessLogData]])
+    arr = np.array(arr)
+    if len(buffer) == 0:
+        buffer = arr
+    else:
+        buffer = np.vstack((np.array(buffer), arr))
+    if len(buffer) > 0:
+        buffer = buffer[-buffer_size:, :]
+    buffer = buffer.tolist()
+# request function with post processing: blocking
+def do_request(containers):
     try:
         while not stop_event.is_set():
             postprocess(next(containers))
     except Exception as e:
         logging.error(e)
-        
-
+def run_grpc_client(containers):
+    do_request(containers)
+# ---------------------------------------------------------------- STOP REQUEST: stop the client ----------------------------------------------------------------
+# stop request
 def stop_request(containers):
     containers.cancel()
     logging.info('gRPC request cancelled!')
-    
-def run_grpc_client(containers):
-    do_request(containers)
-
+# ---------------------------------------------------------------- SAMPLING ----------------------------------------------------------------
 def sample_func(time_stamp):
     global buffer
     if len(buffer) == 0:
@@ -103,23 +102,24 @@ def sample_func(time_stamp):
     sample_value = buffer.pop(0)[0]
     return time_stamp, sample_value
 
+# set the stop event
 def signal_handler(containers, grpc_client_thread):
     stop_event.set()
 
 
 if __name__ == '__main__':
     stop_event.clear()
-
+    # start the client to receive the stream and get the data from the streaming
     containers = start_request()
     grpc_client_thread = threading.Thread(target=lambda: run_grpc_client(containers))
     signal.signal(signal.SIGINT, lambda signal, frame: signal_handler(containers, grpc_client_thread))
-
+    # run the client in background
     grpc_client_thread.setDaemon(True)
     grpc_client_thread.start()
 
-    
+    # sampling the data and send the data regularly
     output = []
-
+    # sample in a loop
     async def sample_loop():
         async def sample_coro():
             time_stamp = time.time()
@@ -131,7 +131,7 @@ if __name__ == '__main__':
             return
         while not stop_event.is_set():
             await asyncio.gather(asyncio.sleep(sample_interval), sample_coro())
-
+    # send in a loop with larger interval
     async def send_loop():
         async def send_coro():
             # print all data using influxdb form
@@ -143,7 +143,7 @@ if __name__ == '__main__':
             return
         while not stop_event.is_set():
             await asyncio.gather(asyncio.sleep(send_interval), send_coro())
-
+    # start the loop until stop event is set
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     loop.run_until_complete(asyncio.gather(sample_loop(), send_loop()))

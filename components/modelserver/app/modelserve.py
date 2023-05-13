@@ -14,34 +14,34 @@ import json
 import time
 import pika
 
+## CONFIGURATION
+# general
 window_step = config.parser.get('General', 'window_step')
-
 window_step = pd.to_timedelta(window_step)
-
-# RabbitMQ subscriber
+# RabbitMQ client - general
 rabbitmq_broker_ip = config.parser.get('RabbitMQ', 'broker_ip')
 rabbitmq_broker_port = config.parser.get('RabbitMQ', 'broker_port')
 rabbitmq_backup_size = config.parser.get('RabbitMQ', 'backup_size')
 rabbitmq_backup_size = float(rabbitmq_backup_size)
-
+# RabbitMQ client - consumer
 rabbitmq_consumer_exchange = config.parser.get('RabbitMQ', 'consumer_exchange')
 rabbitmq_consumer = RabbitMQClient(rabbitmq_broker_ip, rabbitmq_broker_port, rabbitmq_backup_size)
-
+# RabbitMQ client - producer
 rabbitmq_producer_exchange = config.parser.get('RabbitMQ', 'producer_exchange')
 rabbitmq_producer = RabbitMQClient(rabbitmq_broker_ip, rabbitmq_broker_port, rabbitmq_backup_size)
-
 # Influxdb
 url = config.parser.get('Influxdb', 'url')
 database = config.parser.get('Influxdb', 'database')
 username = config.parser.get('Influxdb', 'username')
 password = config.parser.get('Influxdb', 'password')
 token = f'{username}:{password}'
-
 client = InfluxDBClient(url=url, token=token)
 write_api = client.write_api(write_options=SYNCHRONOUS)
 
+# stop event
 stopEvent = threading.Event()
 
+# ---------------------------------------------------------------- THREADS / INFRASTRUCTURE ----------------------------------------------------------------
 def rabbitmq_consumer_run():
     # consume
     logging.info('RabbitMQ cosumer connection starts...')
@@ -52,7 +52,6 @@ def rabbitmq_consumer_run():
     end = datetime.now()
     logging.info('RabbitMQ consumer connection takes %ss' % (end - start).total_seconds())
     rabbitmq_consumer.consume()
-
 def rabbitmq_producer_run():
     # produce
     logging.info('RabbitMQ producer connection starts...')
@@ -62,13 +61,15 @@ def rabbitmq_producer_run():
     end = datetime.now()
     logging.info('RabbitMQ producer connection takes %ss' % (end - start).total_seconds())
 
+# ---------------------------------------------------------------- CORE FUNCTIONS ----------------------------------------------------------------
+# deserialization
 def parse(input_data):
     dict_data = json.loads(input_data)
     time_stamp = dict_data['time']
     feature = np.fromstring(dict_data['fields']['feature'], sep='\n', dtype=np.float32)
     feature = np.reshape(feature, (1, -1))
     return time_stamp, feature
-
+# core function with timeout for thread function 3: interefence with ML-algorithm and write to database
 @func_set_timeout(window_step.total_seconds())
 def evalloss():
     try:
@@ -90,23 +91,23 @@ def evalloss():
     except RuntimeError as e:
         logging.error('Runtime error: %s' % e)
     except: pass
-
+# thread function 3
 def run():
     while not stopEvent.is_set():
         try:
             evalloss()
         except func_timeout.exceptions.FunctionTimedOut as e: 
             logging.error('Time out error: %s' % e)
-
+# create threads
 rabbitmq_consumer_thread = threading.Thread(target=rabbitmq_consumer_run)
 # rabbitmq_producer_thread = threading.Thread(target=rabbitmq_producer_run)
 modelserve_thread = threading.Thread(target=run)
-
+# start threads
 def start():
     rabbitmq_consumer_thread.start()
     # rabbitmq_producer_thread.start()
     modelserve_thread.start()
-
+# stop threads
 def stop():
     stopEvent.set()
     modelserve_thread.join()
