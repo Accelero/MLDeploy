@@ -91,8 +91,8 @@ def filter_df_discrete(df, df_assist):
                 freq = (end - start) / num
         # scale feature
         feature = df['_value']
-        feature_max = abs(max(feature))
-        feature_min = abs(min(feature))
+        feature_max = max(feature)
+        feature_min = min(feature)
         feature = (feature - feature_min) / (feature_max - feature_min)
         df['_value'] = feature
     except:
