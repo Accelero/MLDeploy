@@ -89,6 +89,12 @@ def filter_df_discrete(df, df_assist):
                 start = x1[start_idx] # new_feature_start = x1_orig[start]
                 end = x1[end_idx] # new_feature_end = x1_orig[end]
                 freq = (end - start) / num
+        # scale feature
+        feature = df['_value']
+        feature_max = abs(max(feature))
+        feature_min = abs(min(feature))
+        feature = (feature - feature_min) / (feature_max - feature_min)
+        df['_value'] = feature
     except:
         pass
 
@@ -144,9 +150,6 @@ def preprocess(_input: pd.DataFrame):
 
     # scale feature between 0 and 1
     feature = df['_value']
-    feature_max = max(feature)
-    feature_min = min(feature)
-    feature = (feature - feature_min) / (feature_max - feature_min)
     feature = feature.to_csv(columns=['_value'], header=False, index=False)
 
     # find timestamp
