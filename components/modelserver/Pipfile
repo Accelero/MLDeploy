@@ -4,23 +4,15 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-flask = "*"
-requests = "*"
-paho-mqtt = "*"
+pandas = "*"
+pika = "*"
+line-protocol-parser = "*"
+func-timeout = "*"
+influxdb-client = "*"
 onnx = "*"
 onnxruntime = "*"
-influxdb-client = {extras = ["ciso"], version = "*"}
-line-protocol-parser = "*"
-pika = "*"
-pandas = "*"
-func-timeout = "*"
 
 [dev-packages]
-autopep8 = "*"
-jupyter = "*"
-torch = "*"
-pandas = "*"
-matplotlib = "*"
 
 [requires]
 python_version = "3.9"

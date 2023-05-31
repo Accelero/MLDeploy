@@ -1,5 +1,0 @@
-services:
-  modelserver:
-    image: dev/modelserver
-    build:
-      target: dev

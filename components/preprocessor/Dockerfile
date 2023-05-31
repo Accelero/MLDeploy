@@ -11,8 +11,9 @@ ENV PIPENV_CUSTOM_VENV_NAME=".venv"
 
 
 FROM dev AS build
+ARG COMPONENT_NAME
 
-COPY components/preprocessor/Pipfile* /workspace/
+COPY components/${COMPONENT_NAME}/Pipfile* /workspace/
 
 WORKDIR /workspace
 # RUN pipenv install --deploy --ignore-pipfile
@@ -20,11 +21,12 @@ RUN pipenv sync
 
 
 FROM base AS release
+ARG COMPONENT_NAME
 
 RUN useradd -s /bin/bash appuser
 
 COPY --from=build --chmod=775 /.venv /.venv
-COPY components/preprocessor/app /app
+COPY components/${COMPONENT_NAME}/app /app
 
 ENV PATH="/.venv/bin:$PATH" \
     PYTHONPATH="/app"

@@ -87,6 +87,8 @@ services:
     build: 
       dockerfile: ./components/preprocessor/Dockerfile
       context: ./
+      args:
+        COMPONENT_NAME: preprocessor
     networks:
       - ml_net
     volumes:
@@ -99,6 +101,8 @@ services:
     build:
       dockerfile: ./components/modelserver/Dockerfile
       context: ./
+      args:
+        COMPONENT_NAME: modelserver
     networks:
       - ml_net
     volumes:
@@ -106,3 +110,18 @@ services:
       - ./components/modelserver/app:/app # dev-opt
     depends_on:
       - influxdb
+  # ML-algorithm function
+  processor:
+    build:
+      dockerfile: ./components/processor/Dockerfile
+      context: ./
+      args:
+        COMPONENT_NAME: processor
+    networks:
+      - ml_net
+    volumes:
+      # for easier development: can be removed in release version
+      - ./components/processor/app:/app # dev-opt
+    depends_on:
+      - influxdb
+      - rabbitmq
