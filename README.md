@@ -35,7 +35,7 @@ Das Beispiel (Beispiel einfügen) zeigt die Implementierung des ML-Deploy Konzep
 
 - **Processor Template**
 
-    Der generische [Processor](https://hub.autolern.org/wbk/MLDeploy/-/tree/template_example/components/processor) bzw. das Processor Template ist das Herzstück der anwendungsfallspezifischen Applikation. Durch Nutzung des Templates können beliebige logische Funktionen, wie die Datenvorverarbeitung und ein ML-Modell in das ML-Deploy System integriert werden. Zur kommunikationstechnischen Anbindung innerhalb des Systems ist lediglich die Angabe des Exchange auf dem message broker notwendig, auf welche geschrieben bzw. von welcher gelesen werden soll.
+    Der generische [Processor](https://hub.autolern.org/wbk/MLDeploy/-/tree/template_example/components/processor/app) bzw. das Processor Template ist das Herzstück der anwendungsfallspezifischen Applikation. Durch Nutzung des Templates können beliebige logische Funktionen, wie die Datenvorverarbeitung und ein ML-Modell in das ML-Deploy System integriert werden. Zur kommunikationstechnischen Anbindung innerhalb des Systems ist lediglich die Angabe des Exchange auf dem message broker notwendig, auf welche geschrieben bzw. von welcher gelesen werden soll.
 
 - *Grafana*
 
