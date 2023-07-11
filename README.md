@@ -4,7 +4,7 @@
 
 
 ## Architektur im Beispiel mit einem generischen Processor
-The following figure shows the framework. All of the components run in containers, which provides an isolation environment from the operating system.
+
 
 ![](abstract_concept.png "MLDeploy Structure")
 
@@ -19,9 +19,9 @@ Das Beispiel (Beispiel einfügen) zeigt die Implementierung des ML-Deploy Konzep
 
     Zum Einsatz kommt hier das Tool *Telegraf*, das über verschiedene Input-Plugins Daten aufzeichnen kann. 
     
-    Vorgefertigte **input-plugins** existieren für bekannte Standards wie z.B. *OPC UA* und *MQTT*. Die Entwicklung eigener Plugins ist ebenfalls möglich.  
+    Vorgefertigte *input-plugins* existieren für bekannte Standards wie z.B. *OPC UA* und *MQTT*. Die Entwicklung eigener Plugins ist ebenfalls möglich.  
 
-    Gleichermaßen existieren vorgefertigte **output-plugins** wie z.B. für *influx*. Ein output-plugin für den in ML-Deploy genutzten message broker *rabbitmq* ist eine Eigenentwicklung.
+    Gleichermaßen existieren vorgefertigte *output-plugins* wie z.B. für *influx*. Ein output-plugin für den in ML-Deploy genutzten message broker *rabbitmq* ist eine Eigenentwicklung.
 
 - *RabbitMQ* 
 
